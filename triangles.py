@@ -55,10 +55,10 @@ def findMinPairs(graph, edges):
         for neighbour in edgeNeighbours:
             pairType = getPairType(graph[neighbour], graph[point])
 
-        if (pairType in edgePairs and type(edgePairs[pairType]) is set):
-            edgePairs[pairType].add(getPairKey(point, neighbour))
-        else:
-            edgePairs[pairType] = set([getPairKey(point, neighbour)])
+            if (pairType in edgePairs and type(edgePairs[pairType]) is set):
+                edgePairs[pairType].add(getPairKey(point, neighbour))
+            else:
+                edgePairs[pairType] = set([getPairKey(point, neighbour)])
     
     print(edgePairs)
     # while True:
