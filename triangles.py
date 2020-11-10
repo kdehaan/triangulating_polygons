@@ -7,16 +7,15 @@ class Vertex:
     """A point in an undirected graph"""
     key = ""
     value = None
-    neighbours = []
+    neighbours = set()
 
     def __init__(self, key, value, neighbours):
         self.key = key
         self.value = value
-        self.neighbours = neighbours
+        self.neighbours = set(neighbours.strip("[]").split(","))
 
     def addNeighbour(self, point):
-        self.neighbours.append(point)
-
+        self.neighbours.add(point)
 
 
 
