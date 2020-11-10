@@ -99,7 +99,7 @@ def main():
     minTriangles, fillType = getMinTriangles(edgePairs, valueTypes)
 
     print("The minimum number of completed triangles possible in this polygon is {}.\n\
-One way to accomplish this is to fill all points with the value '{}'".format(minTriangles, fillType))
+One way to accomplish this is to fill all empty points with the value '{}'".format(minTriangles, fillType))
 
     
 
