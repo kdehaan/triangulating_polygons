@@ -44,27 +44,43 @@ def readCSV(fileLocation=DEFAULT_GRAPH):
 def findMinPairs(graph, edges):
     edgePairs = dict() # key: type, value: set of pairs
 
-    currentKey = next(iter(edges)) # get arbitrary point from the edge set
-    pairPartners = graph[currentKey].getEdgeNeighbours(edges)
+    # currentKey = next(iter(edges)) # get arbitrary point from the edge set
     
-    while True:
-        chosenPartner = next(iter(pairPartners))
-        pairType = getPairType(graph[currentKey], graph[chosenPartner])
+    # at this point I messed around with intelligently reading every other 
+    # point so as to minimize reads, but I realized it only made it O(n/2) 
+    # from O(n) and decided it was more trouble that it was worth
+
+    for point in edges:
+        edgeNeighbours = graph[point].getEdgeNeighbours(edges)
+        for neighbour in edgeNeighbours:
+            pairType = getPairType(graph[neighbour], graph[point])
+
         if (pairType in edgePairs and type(edgePairs[pairType]) is set):
-            edgePairs[pairType].add({currentKey, chosenPartner})
+            edgePairs[pairType].add(getPairKey(point, neighbour))
         else:
-            edgePairs[pairType] = set({currentKey, chosenPartner})
-        print(edgePairs)
-        break
+            edgePairs[pairType] = set([getPairKey(point, neighbour)])
+    
+    print(edgePairs)
+    # while True:
 
 
-    print(currentKey)
-    print(pairPartners)
+    #     print(pairPartners)
+    #     print(currentKey, chosenPartner, unchosenPartner)
+    #     print(edgePairs)
+    #     print("diff", pairPartners.difference(set(unchosenPartner)))
+
+    #     break
+
+
+    # print(currentKey)
+    # print(pairPartners)
     
 
 def getPairType(pointA, pointB):
-    return "".join(sorted(pointA.value + pointB.value))
+    return getPairKey(pointA.value, pointB.value)
 
+def getPairKey(a, b):
+    return "({})".format(" ".join(sorted((a, b))))
 
 def main():
     graphPoints, edgePoints = readCSV()
