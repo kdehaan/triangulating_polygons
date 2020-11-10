@@ -41,9 +41,6 @@
                 Given an n-sided polygon where the minimum pair number is p, assume there exists some colouring pattern that produces at most p-1 completed triangles. Given that the creation of an 'incomplete' triangle cannot reduce the pair number, it will remain constant until any completed triangles are formed. Therefore, to meet the condition of at most p-1 completed triangles, we must create at most p-1 triangles that collectively have at least p edges of the minimum type. Each completed triangle has, by definition, 1 of each pair type and three pairs - no more, no less. It is now apparent that p-1 triangles cannot produce p edges of any type, and will always have p-1, meaning that the polygon must have at least p completed triangles by proof of contradiction.
 
 
-
-
-
         -Set up a way to deal with this graph (and others) in python
 
 # Resources
