@@ -1,5 +1,6 @@
 import csv
 import os
+import sys
 
 DEFAULT_GRAPH = "default.csv"
 
@@ -14,10 +15,6 @@ class Vertex:
         # https://docs.python.org/3/library/csv.html#csv.writer "None is written as the empty string"
         self.value = None if value is "" else value 
         self.neighbours = set(neighbours.strip("[]").split(","))
-      
-
-    def addNeighbour(self, point):
-        self.neighbours.add(point)
 
     def getEdgeNeighbours(self, edges):
         return self.neighbours.intersection(edges)
@@ -25,6 +22,8 @@ class Vertex:
 
 
 def readCSV(fileLocation=DEFAULT_GRAPH):
+    """Opens a .csv describing a certain polygon. Defaults to the provided example"""
+
     points = {}
     edgePoints = set()
     valueTypes = set()
@@ -43,10 +42,11 @@ def readCSV(fileLocation=DEFAULT_GRAPH):
 
 
 
-def findMinPairs(graph, edges):
-    edgePairs = dict() # key: type, value: set of pairs
+def findEdgePairs(graph, edges):
+    """Finds unique edge pairs. 
+    Note: non-deterministic if multiple solutions are possible due to set operations"""
 
-    # currentKey = next(iter(edges)) # get arbitrary point from the edge set
+    edgePairs = dict() # key: type, value: set of pairs
     
     # at this point I messed around with intelligently reading every other 
     # point so as to minimize set operations, but I realized it only made it O(n/2) 
@@ -70,10 +70,15 @@ def findMinPairs(graph, edges):
     
 
 def getPairKey(a, b):
+    """Makes sure pairs like (1, 2) and (2, 1) aren't duplicated in sets""" 
+
     return "({})".format(" ".join(sorted((a, b))))
 
 
 def getMinTriangles(edgePairs, valueTypes):
+    """Determines the unique pair type with the fewest occurrences. 
+    Non-deterministic if multiple solutions are possible"""
+
     minVal = float('inf')
     minPair = None
     for pair in edgePairs:
@@ -81,23 +86,22 @@ def getMinTriangles(edgePairs, valueTypes):
             minVal = len(edgePairs[pair])
             minPair = pair
    
-    fillType = valueTypes - set(minPair.strip("()").split(" "))
+    fillType = (valueTypes - set(minPair.strip("()").split(" "))).pop()
     return minVal, fillType
 
 
 def main():
-    graphPoints, edgePoints, valueTypes = readCSV()
-    edgePairs = findMinPairs(graphPoints, edgePoints)
+    fileLoc = DEFAULT_GRAPH
+    if len(sys.argv) > 1:
+        fileLoc = sys.argv[1]
+    graphPoints, edgePoints, valueTypes = readCSV(fileLocation=fileLoc)
+    edgePairs = findEdgePairs(graphPoints, edgePoints)
     minTriangles, fillType = getMinTriangles(edgePairs, valueTypes)
 
-    print("The minimum number of completed triangles possible in this polygon is {}. One way to accomplish this is to fill points all points with the value {}".format(minTriangles, fillType))
+    print("The minimum number of completed triangles possible in this polygon is {}.\n\
+One way to accomplish this is to fill all points with the value '{}'".format(minTriangles, fillType))
 
     
-
-    # for key in graphPoints:
-    #     point = graphPoints[key]
-    #     print(point.key, point.value, point.neighbours, point.isEdge)
-
 
 
 
