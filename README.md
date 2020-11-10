@@ -24,6 +24,26 @@
 
                 I am initially inclined to think that the colouring task is impossible, and will now look to justify this instinct.
 
+                Thought: is this related to the four-colour problem?
+
+                Observation (I):
+                Edges between two different coloured points (henceforth 'pair edges') cannot be 'destroyed' without completing a triangle. For example, with an a-b pair, you cannot add either an 'a' or a 'b' without creating a new a-b pair, and to add a 'c' would complete a triangle. This is independent of the structure of internal triangles.
+
+                Statement to prove:
+                The minimum number of complete triangles in any such polygon is equal to the minimum existing number of pair edges among any of the possible types of paired edges in the graph.
+                For example, in the given polygon there are three a-b pairs, three a-c pairs, and three b-c pairs, so three is the minimum number of completed triangles.
+
+                Naive, informal proof by contradiction in the trivial case:
+                Given a three sided polygon of a, b, and c vertices, there exists some way to add vertices inside this triangle such that n-1 (where n is the minimum pair number, or 1 in this instance) completed triangles are formed (so '0' triangles in this instance).
+                Due to observation I, it is known that the pair types cannot be 'destroyed', thus guaranteeing that there is always at least one edge of each pair type. In order to fill the polygon with 0 completed triangles, the final triangle (whichever that is) must have at least two edges that are identical. This is impossible, and thus the premise is proved.
+
+                Expanding to n-sided polygons:
+                Given an n-sided polygon where the minimum pair number is p, assume there exists some colouring pattern that produces at most p-1 completed triangles. Given that the creation of an 'incomplete' triangle cannot reduce the pair number, it will remain constant until any completed triangles are formed. Therefore, to meet the condition of at most p-1 completed triangles, we must create at most p-1 triangles that collectively have at least p edges of the minimum type. Each completed triangle has, by definition, 1 of each pair type and three pairs - no more, no less. It is now apparent that p-1 triangles cannot produce p edges of any type, and will always have p-1, meaning that the polygon must have at least p completed triangles by proof of contradiction.
+
+
+
+
+
         -Set up a way to deal with this graph (and others) in python
 
 # Resources
