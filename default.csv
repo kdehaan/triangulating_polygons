@@ -1,4 +1,4 @@
-Key,Value,Neighbours
+key,value,neighbours
 1,a,"[2,11,12]"
 2,a,"[1,12,13,3]"
 3,c,"[2,13,14,4]"
