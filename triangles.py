@@ -18,66 +18,88 @@ class Vertex:
         self.value = None if value is "" else value 
         self.neighbours = set(neighbours.strip("[]").split(","))
 
-    def getEdgeNeighbours(self, edges):
-        return self.neighbours.intersection(edges)
+    def getborderNeighbours(self, borders):
+        return self.neighbours.intersection(borders)
 
 
 class UndirectedGraph:
     """An undirected graph"""
 
     points = []
-    edges = set()
+    borders = set()
     interior = set()
-    edgePairs = dict() # key: type, value: set of pairs
+    borderPairs = dict() # key: type, value: set of pairs
 
-    def __init__(self, points, edges, interior):
-        if edges.union(interior) != set(points):
-            raise ValueError("Graph edges and interior are incomplete")
+    def __init__(self, points, borders, interior):
+        if borders.union(interior) != set(points):
+            raise ValueError("Graph borders and interior are incomplete")
         self.points = points
-        self.edges = edges
+        self.borders = borders
         self.interior = interior
 
 
     def colourMinTriangles(self):
-        self.sandwichEdges()
-        self.findEdgePairs()
+        self.palindromeBorders()
+        self.findBorderPairs()
         # self.colourInterior()
 
         return self.points
 
     
-    def sandwichEdges(self):
-        """Finds 'sandwiches' in the edge which can be used to 'destroy' paired edges"""
+    def palindromeBorders(self):
+        """Finds palindromes in the border which can be used to 'destroy' paired borders"""
 
-        edgeValues = []
+        borderValues = []
         
 
         prevPoint = None
-        currentPoint = next(iter(self.edges)) # grab arbitrary set element
-        prevPoint = next(iter(self.points[currentPoint].neighbours.intersection(self.edges)))
+        currentPoint = next(iter(self.borders)) # grab arbitrary set element
+        prevPoint = next(iter(self.points[currentPoint].getborderNeighbours(self.borders)))
         startPoint = currentPoint
         
-        recentEdgePair = (self.points[prevPoint].value, self.points[currentPoint].value)
 
         while True:
-            print(currentPoint)
-            edgeValues.append(self.points[currentPoint].value)
-            neighbours = self.points[currentPoint].neighbours.intersection(self.edges)
+            borderValues.append({"value": self.points[currentPoint].value, "key": self.points[currentPoint].key})
+            neighbours = self.points[currentPoint].neighbours.intersection(self.borders)
             tempPoint = currentPoint
             currentPoint = next(iter(neighbours - {prevPoint}))
             prevPoint = tempPoint
             
-
             if currentPoint == startPoint:
                 break
         
+        self.trimBorders(borderValues)
+        
 
-        print(edgeValues)
+
+    def trimBorders(self, borderValues):
+        # print(borderValues)
+
+        trimStartIdx = 0
+        prevVal = borderValues[trimStartIdx]['value']
+        # trimEndIdx = 0
+        
+        # print(palindromeCandidate["value"])
+
+        for idx, node in enumerate(borderValues):
+            if node['value'] == borderValues[trimStartIdx]['value']:
+                if (idx - trimStartIdx) > 1:
+                    print("trim time from ", trimStartIdx, idx)
+                    trimStartIdx = idx
+                else:
+                    trimStartIdx = idx
+            else:
+                if node['value'] != prevVal:
+                    if prevVal != borderValues[trimStartIdx]['value']:
+                        trimStartIdx = idx
+            prevVal = node['value']
 
 
 
-    def findEdgePairs(self):
-        """Finds unique edge pairs. 
+
+
+    def findBorderPairs(self):
+        """Finds unique border pairs. 
         Note: non-deterministic if multiple solutions are possible due to set operations
         """
         
@@ -85,17 +107,17 @@ class UndirectedGraph:
         # point so as to minimize set operations, but I realized it only made it O(n/2) 
         # from O(n) and decided it was more trouble that it was worth
 
-        for point in self.edges:
-            edgeNeighbours = self.points[point].getEdgeNeighbours(self.edges)
-            for neighbour in edgeNeighbours:
+        for point in self.borders:
+            borderNeighbours = self.points[point].getborderNeighbours(self.borders)
+            for neighbour in borderNeighbours:
                 if (self.points[neighbour].value == self.points[point].value):
                     continue
                 pairType = getPairKey(self.points[neighbour].value, self.points[point].value)
 
-                if (pairType in self.edgePairs and type(self.edgePairs[pairType]) is set):
-                    self.edgePairs[pairType].add(getPairKey(point, neighbour))
+                if (pairType in self.borderPairs and type(self.borderPairs[pairType]) is set):
+                    self.borderPairs[pairType].add(getPairKey(point, neighbour))
                 else:
-                    self.edgePairs[pairType] = set([getPairKey(point, neighbour)])
+                    self.borderPairs[pairType] = set([getPairKey(point, neighbour)])
 
 
 
@@ -105,7 +127,7 @@ def readCSV(fileLocation=DEFAULT_GRAPH):
     """
 
     points = {}
-    edgePoints = set()
+    borderPoints = set()
     interiorPoints = set()
  
 
@@ -117,16 +139,16 @@ def readCSV(fileLocation=DEFAULT_GRAPH):
             point = Vertex(row[0], row[1], row[2])
             points[point.key] = point
             if point.value is not None:
-                edgePoints.add(point.key)
+                borderPoints.add(point.key)
             else:
                 interiorPoints.add(point.key)
-    graph = UndirectedGraph(points, edgePoints, interiorPoints)
+    graph = UndirectedGraph(points, borderPoints, interiorPoints)
         
     return graph
         
 
-# def updateEdgePair(pair, newVal):
-#     """Updates the edge pair and determines if a sandwich has been found"""
+# def updateborderPair(pair, newVal):
+#     """Updates the border pair and determines if a palindrome has been found"""
 
 #     if newVal == pair[1]:
 #         return pair, False
@@ -152,16 +174,16 @@ def getPairKey(a, b):
     return "({})".format(" ".join(sorted((a, b))))
 
 
-def getMinTriangles(edgePairs, valueTypes):
+def getMinTriangles(borderPairs, valueTypes):
     """Determines the unique pair type with the fewest occurrences. 
     Non-deterministic if multiple solutions are possible
     """
 
     minVal = float('inf')
     minPair = None
-    for pair in edgePairs:
-        if len(edgePairs[pair]) < minVal:
-            minVal = len(edgePairs[pair])
+    for pair in borderPairs:
+        if len(borderPairs[pair]) < minVal:
+            minVal = len(borderPairs[pair])
             minPair = pair
    
     fillType = (valueTypes - set(minPair.strip("()").split(" "))).pop()
@@ -174,9 +196,9 @@ def main():
         fileLoc = sys.argv[1]
     graph = readCSV(fileLocation=fileLoc)
     minTriangles = graph.colourMinTriangles()
-    # graphPoints = sandwichEdges(graphPoints, edgePoints, interiorPoints)
-    # edgePairs = findEdgePairs(graphPoints, edgePoints)
-    # minTriangles, fillType = getMinTriangles(edgePairs, DEFAULT_TYPES)
+    # graphPoints = palindromeborders(graphPoints, borderPoints, interiorPoints)
+    # borderPairs = findborderPairs(graphPoints, borderPoints)
+    # minTriangles, fillType = getMinTriangles(borderPairs, DEFAULT_TYPES)
 
 #     print("The minimum number of completed triangles possible in this polygon is {}.\n\
 # One way to accomplish this is to fill all empty points with the value '{}'".format(minTriangles, fillType))
