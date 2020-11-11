@@ -70,8 +70,12 @@ class UndirectedGraph:
         palindromes = findPalindromes(borderNodes)
         print(palindromes)
 
-        # coverPalindrome(key, size)
-        # print(palindromes)
+        # this is guaranteed to converge because there are a limited number of palindromes possible
+
+        for idx in palindromes:
+            self.coverPalindrome(idx, palindromes[idx], borderNodes)
+
+      
 
     def getOtherBorderNode(self, key, other):
         """Given a key and one of it's border neighbours, returns the other border neighbour"""
@@ -84,8 +88,20 @@ class UndirectedGraph:
 
 
 
-    def coverPalindromes(self, key, size):
-        print(key)
+    def coverPalindrome(self, idx, size, nodes):
+        """Attempts to 'cover' a palindrome to eliminate a paired edge"""
+        
+        sequence = []
+        key = idxToKey(idx, nodes)
+        neighbours = self.points[key].getborderNeighbours(self.borders)
+        sequence = list(neighbours)
+        sequence.insert(1, key)
+        if idx % 1:
+            sequence.append(self.getOtherBorderNode(idxToKey(idx+1, nodes), key)) # deals with even palindromes
+        pointValues = [self.points[x].value for x in sequence]
+        print("key", key, "sequence", sequence)
+        print("values", pointValues)
+
         
 
 
@@ -120,17 +136,19 @@ class UndirectedGraph:
                     self.borderPairs[pairType] = set([getPairKey(point, neighbour)])
 
 
+def idxToKey(idx, nodes):
+    """Retrieves the vertex key corresponding to the index"""
+    return nodes[int(idx)]['key']
+
 def findPalindromes(borderNodes):
         """Finds palindromic sublists in O(n).
         Based off of Manacher's Algorithm (linear time palindromes)
         https://leetcode.com/problems/longest-palindromic-substring/discuss/3337/Manacher-algorithm-in-Python-O(n)
         """
 
-        # print(borderNodes)
         palindromes = {}
         borderValues = [x['value'] for x in borderNodes]
         borderKeys = [x['key'] for x in borderNodes]
-        # print(borderNodes, borderValues)
         print("values", borderValues)
         print("keys  ", borderKeys)
 
