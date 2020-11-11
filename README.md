@@ -8,7 +8,7 @@ The plain english description for how this program works is that it identifies t
 
 From this point, the active border is analysed to determine the number of (now directed) pair edges remaining. Whenever there is at least one of each pair type remaining, it is impossible to fill the polygon without producing at least one completed triangle, regardless of the internal triangle structure. As such, each full triplet of a-b/a-c/b-c corresponds to exactly one completed triangle. By finding the minimum pair occurrence, it is then possible to directly compute the minimum number of completed triangles that can be produced. Additionally, because the palindromic edges have been eliminated wherever possible, (one of) the correct way(s) to colour the rest of the polygon is to simply fill all blank spaces with the colour _not_ in the pair of minimum occurrence (or if there are multiple minimum pairs, any color that sits out of at least one of them).
 
-To the best of my knowledge, this program will run in worst case O(n\*ln(n)) + O(m), where `n` is the number of initially filled nodes of the polygon and `m` is the number of interior nodes.
+To the best of my knowledge, this program will run _roughly_ in worst case O(n\*ln(n)) + O(m), where `n` is the number of initially filled nodes of the polygon and `m` is the number of interior nodes. If nodes are significantly interconnected, you can probably add another O(max_neighbours) in there as well.
 
 ## Timeline
 
@@ -25,9 +25,13 @@ Total: approx. 16 hours (probably give or take an hour since GitHub doesn't trac
 
 ## Thought Process
 
-Language selection: - Python is the first language of choice due to ease of use and simplicity of execution - Runtime is more likely to be affected by time complexity than language speed to any significant extent, so Python is appropriate to use
+Language selection:
 
-First Steps: - Look up "polygon triangulation" - Try to solve by hand to see where the complexity lies
+- Python is the first language of choice due to ease of use and simplicity of execution - Runtime is more likely to be affected by time complexity than language speed to any significant extent, so Python is appropriate to use
+
+First Steps:
+
+- Look up "polygon triangulation" - Try to solve by hand to see where the complexity lies
 
 ### Initial findings from hand solving:
 
@@ -85,8 +89,12 @@ The most likely source of improvement would be to flesh out the test cases in or
 
 Another possible improvement would be to alter the palindrome-finding code such that it is able to short-circuit when a given palindrome has only one value inside; I'm still handling this case, but the speed (_not_ the time complexity) of the program would likely be improved if the final passthrough could be skipped.
 
-Other things that this solution is missing, which I would add if I were to spend more time on it: - Determining if 'up to' a given amount of triangles is possible is left as an exercise for the reader. In most cases this is trivial. - The proof is not rigorous in the general case. While I am fairly confident in my analysis, it not unlikely that I have overlooked an edge case, simply because I do not have the required background in graph theory. (Or because I just missed it :slightly_smiling_face:) - This solution is not guaranteed to work on polygons with holes, or non-planar polygons.
-(it might work for some of them, though)
+Other things that this solution is missing, which I would add if I were to spend more time on it:
+
+- Determining if 'up to' a given amount of triangles is possible is left as an exercise for the reader. In most cases this is trivial.
+- The proof is not rigorous in the general case. While I am fairly confident in my analysis, it not unlikely that I have overlooked an edge case, simply because I do not have the required background in graph theory. (Or because I just missed it :slightly_smiling_face:)
+- This solution is not guaranteed to work on polygons with holes, or non-planar polygons.
+  (It might work for some of them, though.)
 
 Some examples of unit tests that I would add:
 
@@ -150,6 +158,7 @@ Output is not guaranteed to be identical across multiple runs. However, the mini
 Unit testing is (naively) performed by running the solution many times on each sample polygon and verifying that the output remains constant.
 
 To run unit tests:
+
 `python unitTests.py -b`
 
 Sample Output:
