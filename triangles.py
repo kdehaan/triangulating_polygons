@@ -42,14 +42,15 @@ class UndirectedGraph:
         self.borders = borders
         self.interior = interior
 
-    def colourMinTriangles(self, fileOut=None):
-        self.trimBorders()
+    def colourMinTriangles(self, fileOut=None, surpressOutput=False):
+        self.trimBorders(output=(not surpressOutput))
         self.findBorderPairs()
         # pairs = self.findBorderPairs()
         minTriangles, fillType = self.getMinTriangles()
-        print("A minimum of {} completed triangles is possible by filling \
+        if not surpressOutput:
+            print("A minimum of {} completed triangles is possible by filling \
 any remaining points with {}.\nThere may be multiple valid solutions."""
-              .format(minTriangles, fillType))
+                  .format(minTriangles, fillType))
 
         if (fileOut):
             self.fillEmpty(fillType)
@@ -117,7 +118,7 @@ any remaining points with {}.\nThere may be multiple valid solutions."""
             if self.points[point].value is None:
                 self.points[point].value = fillValue
 
-    def trimBorders(self):
+    def trimBorders(self, output=True):
         """Attempts to use palindromes to 'destroy' paired borders"""
 
         # reducing palindromes can produce more palindromes,
@@ -139,7 +140,7 @@ any remaining points with {}.\nThere may be multiple valid solutions."""
                                                       borderNodes)
                 if not sequence:
                     continue
-                valid = self.coverPalindrome(sequence)
+                valid = self.coverPalindrome(sequence, output=output)
 
                 if valid:
                     noValidPalindromesLeft = False
@@ -209,7 +210,7 @@ any remaining points with {}.\nThere may be multiple valid solutions."""
         else:
             raise ValueError("Vertex is not on the border")
 
-    def coverPalindrome(self, sequence):
+    def coverPalindrome(self, sequence, output=True):
         """Attempts to 'cover' a palindrome to eliminate a paired edge
         Returns True on success, False on failure
         """
@@ -242,7 +243,8 @@ any remaining points with {}.\nThere may be multiple valid solutions."""
             for point in interiorNeighbours:
                 # this is where the colours are actually changed
                 self.points[point].value = coverValue
-                print("Fill point", point, "with ", coverValue)
+                if output:
+                    print("Fill point", point, "with ", coverValue)
 
             self.borders = self.borders.union(interiorNeighbours)
 
@@ -436,15 +438,17 @@ def main():
                         help="specify input file")
     parser.add_argument("-o", "--fileOut", type=str,
                         help="write output to given filename")
+    parser.add_argument("-b", "--disableOutput",
+                        help="surpress console output", action="store_true")
 
     args = parser.parse_args()
     fileLoc = DEFAULT_GRAPH
     if args.fileIn:
         fileLoc = args.fileIn
-    # if len(sys.argv) > 1:
-    #     fileLoc = sys.argv[1]
+
     graph = readCSV(fileLocation=fileLoc)
-    graph.colourMinTriangles(args.fileOut)
+    graph.colourMinTriangles(fileOut=args.fileOut,
+                             surpressOutput=args.disableOutput)
 
 
 if __name__ == "__main__":
