@@ -3,7 +3,7 @@ import os
 import sys
 
 
-DEFAULT_GRAPH = "sample5.csv"
+DEFAULT_GRAPH = "default.csv"
 DEFAULT_TYPES = {'a', 'b', 'c'}
 
 class Vertex:
@@ -82,6 +82,9 @@ class UndirectedGraph:
     def colourMinTriangles(self):
         self.trimBorders()
         self.findBorderPairs()
+        # pairs = self.findBorderPairs()
+        minTriangles, fillType = self.getMinTriangles()
+        print("A minimum of {} completed triangles is possible, if you fill the rest with {}".format(minTriangles, fillType))
         # self.colourInterior()
 
         return self.points
@@ -94,23 +97,20 @@ class UndirectedGraph:
         while True: #reducing palindromes can produce more palindromes, so iterate until they're all gone
 
             borderNodes = self.getBorderPath()
-            print("border:", borderNodes)
 
             palindromes = findPalindromes(borderNodes)
             if (len(palindromes) == 0):
-                print("no palindromes found")
                 break
 
             # this is guaranteed to converge because there are a limited number of palindromes possible
             noValidPalindromesLeft = True
             for idx in palindromes:
                 sequence = self.getPalindromeSequence(idx, palindromes[idx], borderNodes)
-                print("sequence", sequence)
                 if not sequence:
                     continue
                 valid = self.coverPalindrome(sequence)
+
                 if valid:
-                    print("valid found")
                     noValidPalindromesLeft = False
 
             if noValidPalindromesLeft:
@@ -137,10 +137,7 @@ class UndirectedGraph:
         checked.add(currentPoint)
         path.append(currentPoint)
         possibleRoutes.append(self.getOtherBorderNodes(currentPoint, path[-2]))
-        print("startpoint", startPoint, "prevpoint", prevPoint)
-        # if (startPoint == 11 and ((prevPoint == 1) or (prevPoint == 10))):
-        #     print("stop")
-        print("possibleRoutes", possibleRoutes)
+    
 
         while len(path) > 1:
             
@@ -161,12 +158,9 @@ class UndirectedGraph:
             possibleRoutes.pop()
             currentPoint = path[-1]
 
-        if len(paths) == 0:
-            print('what')
+  
         pathLengths = [len(x) for x in paths]
-        print("paths", paths, "pathLengths", pathLengths)
         longestPath = paths[pathLengths.index(max(pathLengths))]
-   
         borderNodes = [{"value": self.points[x].value, "key":x} for x in longestPath]
         
         return borderNodes
@@ -195,13 +189,8 @@ class UndirectedGraph:
         if not set(sequence).issubset(self.borders): # palindrome is obsolete, abort
             return False
         
-        print("got ", self.getNeighbours(palindromeCore[0]))
-        print("coreNeighbours", [self.getNeighbours(key) for key in palindromeCore])
-        print("coreNeighbours2", [self.points[key].neighbours for key in palindromeCore])
 
         allNeighbours = set().union(*[self.getNeighbours(key) for key in palindromeCore]) # finding candidates to 'cover'
-
-        print("allNeighbours", allNeighbours)
 
         interiorNeighbours = allNeighbours - self.borders # set difference s-t is O(len(s)) in python
         # so this is better than allNeighbours ∩ self.interior, which would be worst case O(len(s)*len(t))
@@ -227,7 +216,6 @@ class UndirectedGraph:
                         stillBorder = True
                 if not stillBorder:
                     self.borders.remove(point)
-                    print("removing", point)
             
             self.borders = self.borders - set(palindromeCore) # update borders
             self.interior = self.interior - interiorNeighbours
@@ -256,7 +244,6 @@ class UndirectedGraph:
             sequence.append(idxToKey(idx+rightOffset, nodes))
             pointValues = [self.points[key].value for key in sequence]
 
-            print("size", leftOffset + rightOffset + 1)
             if ((leftOffset + rightOffset + 1) > size): # max palindrome contains only one value
                 return None
         return sequence
@@ -284,6 +271,22 @@ class UndirectedGraph:
                     self.borderPairs[pairType] = set([getPairKey(point, neighbour)])
 
 
+    def getMinTriangles(self):
+        """Determines the unique pair type with the fewest occurrences. 
+        Non-deterministic if multiple solutions are possible
+        """
+
+        minVal = float('inf')
+        minPair = None
+        for pair in self.borderPairs:
+            if len(self.borderPairs[pair]) < minVal:
+                minVal = len(self.borderPairs[pair])
+                minPair = pair
+    
+        fillType = (self.types - set(minPair.strip("()").split(" "))).pop()
+        return minVal, fillType
+
+
 def idxToKey(idx, nodes):
     """Retrieves the vertex key corresponding to the index"""
     numNodes = len(nodes)
@@ -298,8 +301,6 @@ def findPalindromes(borderNodes):
         palindromes = {}
         borderValues = [x['value'] for x in borderNodes]
         borderKeys = [x['key'] for x in borderNodes]
-        print("values", borderValues)
-        print("keys  ", borderKeys)
 
         valuesString = '#'.join('^{}$' # buffered to track string start/end for Manacher's
         .format("".join(borderValues) + "".join(borderValues))) # duplicated to account for wrapped palindromes
@@ -382,20 +383,6 @@ def getPairKey(a, b):
     return "({})".format(" ".join(sorted((a, b))))
 
 
-def getMinTriangles(borderPairs, valueTypes):
-    """Determines the unique pair type with the fewest occurrences. 
-    Non-deterministic if multiple solutions are possible
-    """
-
-    minVal = float('inf')
-    minPair = None
-    for pair in borderPairs:
-        if len(borderPairs[pair]) < minVal:
-            minVal = len(borderPairs[pair])
-            minPair = pair
-   
-    fillType = (valueTypes - set(minPair.strip("()").split(" "))).pop()
-    return minVal, fillType
 
 
 def main():
