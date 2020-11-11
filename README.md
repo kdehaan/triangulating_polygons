@@ -61,6 +61,8 @@ The Official Python docs
 
 Various Stack Overflow posts for trivial things like incrementing a CSVwriter
 
+I went back to check out how I implemented recursive backtracking in https://github.com/kdehaan/ArduinoMazeAlgorithms/blob/master/maze.cpp
+
 # Hindsight Improvements
 
 # Execution Instructions

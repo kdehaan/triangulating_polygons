@@ -86,6 +86,7 @@ class UndirectedGraph:
         return self.points
 
     
+
     def trimBorders(self):
         """Attempts to use palindromes to 'destroy' paired borders"""
         
@@ -93,27 +94,42 @@ class UndirectedGraph:
 
             borderNodes = []
 
-            prevPoint = None
-            currentPoint = next(iter(self.borders)) # grab arbitrary set element
-            prevPoint = next(iter(self.points[currentPoint].getborderNeighbours(self.borders)))
-            startPoint = currentPoint
-
+            # must find the circumference of the graph to account for holes 
+            # THIS PROBLEM IS NP-HARD GAH
+            # uses list-based recursive backtracking
             paths = []
+            startPoint = next(iter(self.borders)) # grab arbitrary set element
+            prevPoint = next(iter(self.points[startPoint].getborderNeighbours(self.borders))) # grab arbitrary direction to be backwards
+            currentPoint = startPoint
 
-            while True: # must find the circumference of the graph to account for holes THIS PROBLEM IS NP-HARD GAH
+            path = [prevPoint]
+            checked = set()
+            possibleRoutes = []
+
+            checked.add(currentPoint)
+            path.append(currentPoint)
+            possibleRoutes.append(self.getOtherBorderNodes(currentPoint, path[-2]))
+            while len(path) > 1:
                 
-                currentPath = [currentPoint]
-
-                borderNodes.append({"value": self.points[currentPoint].value, "key": self.points[currentPoint].key})
-                tempPoint = currentPoint
-                currentPoint, remainingBranches = self.getOtherBorderNode(currentPoint, prevPoint)
-                # if remainingBranches:
-
-                # prevPoint = tempPoint
-                print("looping2")
-                if currentPoint == startPoint:
-                    break
+                if len(possibleRoutes[-1]) > 0:
+                    nextNode = possibleRoutes[-1].pop()
+                    if (nextNode is startPoint):
+                        paths.append(path.copy()) # copy the state, not the reference
             
+                    if (nextNode not in checked):
+                        currentPoint = nextNode
+                        checked.add(currentPoint)
+                        path.append(currentPoint)
+                        possibleRoutes.append(self.getOtherBorderNodes(currentPoint, path[-2]))
+                        continue
+            
+                checked.remove(currentPoint)
+                path.pop()
+                possibleRoutes.pop()
+                currentPoint = path[-1]
+
+            print("paths", paths)
+
             palindromes = findPalindromes(borderNodes)
             if (len(palindromes) == 0):
                 print("no palindromes found")
@@ -135,14 +151,12 @@ class UndirectedGraph:
                 break
       
 
-    def getOtherBorderNode(self, key, other):
+    def getOtherBorderNodes(self, key, prev):
         """Given a key and one of it's border neighbours, returns the other border neighbour"""
 
         if key in self.borders:
             neighbours = self.points[key].getborderNeighbours(self.borders)
-            remaining = neighbours - {other}
-            numRemaining = len(remaining)
-            return next(iter(remaining)), numRemaining
+            return neighbours - {prev}
         else:
             raise ValueError("Vertex is not on the border")
 
