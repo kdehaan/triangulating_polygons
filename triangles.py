@@ -32,7 +32,7 @@ class UndirectedGraph:
     points = []
     borders = set()
     interior = set()
-    # obsolete = set()
+
     borderPairs = dict() # key: type, value: set of pairs
 
     def __init__(self, points, borders, interior):
@@ -84,7 +84,7 @@ class UndirectedGraph:
         self.findBorderPairs()
         # pairs = self.findBorderPairs()
         minTriangles, fillType = self.getMinTriangles()
-        print("A minimum of {} completed triangles is possible, if you fill the rest with {}".format(minTriangles, fillType))
+        print("A minimum of {} completed triangles is possible by filling the rest with {}.\nThere may be multiple valid solutions.".format(minTriangles, fillType))
         # self.colourInterior()
 
         return self.points
@@ -129,6 +129,8 @@ class UndirectedGraph:
     
         prevPoint = next(iter(self.points[startPoint].getborderNeighbours(self.borders))) # grab arbitrary direction to be backwards
         currentPoint = startPoint
+
+        print("startpoint:", startPoint, "prevpoint", prevPoint)
 
         path = [prevPoint]
         checked = {None} # hack to get rid of strings misbehaving
@@ -204,12 +206,18 @@ class UndirectedGraph:
         if isSafe:
             for point in interiorNeighbours:
                 self.points[point].value = coverValue # this is where the colours are actually changed
-                print("point", point, "is now ", coverValue)
+                print("Fill point", point, "with ", coverValue)
 
             self.borders = self.borders.union(interiorNeighbours)
 
-            # sometimes the outer points of the sequence can be covered, if so, remove from the border
-            for point in [sequence[0], sequence[-1]]:
+            # sometimes nodes can be 'folded' into the border. If so, remove from the border
+            nearByNodes = set().union(*[self.getNeighbours(key) for key in interiorNeighbours])
+            atRiskNodes = (nearByNodes - interiorNeighbours) - set(palindromeCore)
+      
+            for point in atRiskNodes:
+                if point not in self.borders:
+                    continue
+    
                 stillBorder = False
                 for neighbour in self.getNeighbours(point):
                     if neighbour not in self.borders:
