@@ -49,7 +49,7 @@ class UndirectedGraph:
     def palindromeBorders(self):
         """Finds palindromes in the border which can be used to 'destroy' paired borders"""
 
-        borderValues = []
+        borderNodes = []
         
 
         prevPoint = None
@@ -59,7 +59,7 @@ class UndirectedGraph:
         
 
         while True:
-            borderValues.append({"value": self.points[currentPoint].value, "key": self.points[currentPoint].key})
+            borderNodes.append({"value": self.points[currentPoint].value, "key": self.points[currentPoint].key})
             neighbours = self.points[currentPoint].neighbours.intersection(self.borders)
             tempPoint = currentPoint
             currentPoint = next(iter(neighbours - {prevPoint}))
@@ -68,31 +68,32 @@ class UndirectedGraph:
             if currentPoint == startPoint:
                 break
         
-        self.trimBorders(borderValues)
+        self.trimBorders(borderNodes)
         
 
 
-    def trimBorders(self, borderValues):
-        # print(borderValues)
+    def trimBorders(self, borderNodes):
+        """Finds and trims palindromic sublists.
+        Based off of https://www.tutorialspoint.com/palindromic-substrings-in-python
+        """
 
-        trimStartIdx = 0
-        prevVal = borderValues[trimStartIdx]['value']
-        # trimEndIdx = 0
-        
-        # print(palindromeCandidate["value"])
+        # print(borderNodes)
+        palindromes = []
+        borderValues = [x['value'] for x in borderNodes]
+        borderKeys = [x['key'] for x in borderNodes]
+        # print(borderNodes, borderValues)
+        print("values", borderValues)
+        print("keys  ", borderKeys)
+        for startIdx in range(len(borderValues)):
+            for endIdx in range(startIdx+1, len(borderValues)+1):
+                temp = borderValues[startIdx:endIdx]
+                if len(temp) > 1 and temp == temp [::-1]:
+                    if (len(set(temp)) == 2):
+                        palindromes.append((startIdx, endIdx-1))
+                        print("palindrome: ", temp)
 
-        for idx, node in enumerate(borderValues):
-            if node['value'] == borderValues[trimStartIdx]['value']:
-                if (idx - trimStartIdx) > 1:
-                    print("trim time from ", trimStartIdx, idx)
-                    trimStartIdx = idx
-                else:
-                    trimStartIdx = idx
-            else:
-                if node['value'] != prevVal:
-                    if prevVal != borderValues[trimStartIdx]['value']:
-                        trimStartIdx = idx
-            prevVal = node['value']
+        print(palindromes)
+
 
 
 

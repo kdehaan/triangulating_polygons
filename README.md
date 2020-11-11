@@ -53,6 +53,8 @@ https://en.wikipedia.org/wiki/Polygon_triangulation (not very useful tbh)
 
 https://github.com/Clarkew5/Triangulating-Polygons-Challenge (NOT USED, found it and deliberately ignored the contents)
 
+https://www.tutorialspoint.com/palindromic-substrings-in-python
+
 # Hindsight Improvements
 
 # Execution Instructions
