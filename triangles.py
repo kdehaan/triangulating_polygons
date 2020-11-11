@@ -60,9 +60,8 @@ class UndirectedGraph:
 
         while True:
             borderNodes.append({"value": self.points[currentPoint].value, "key": self.points[currentPoint].key})
-            neighbours = self.points[currentPoint].neighbours.intersection(self.borders)
             tempPoint = currentPoint
-            currentPoint = next(iter(neighbours - {prevPoint}))
+            currentPoint = self.getOtherBorderNode(currentPoint, prevPoint)
             prevPoint = tempPoint
             
             if currentPoint == startPoint:
@@ -70,6 +69,23 @@ class UndirectedGraph:
         
         palindromes = findPalindromes(borderNodes)
         print(palindromes)
+
+        # coverPalindrome(key, size)
+        # print(palindromes)
+
+    def getOtherBorderNode(self, key, other):
+        """Given a key and one of it's border neighbours, returns the other border neighbour"""
+
+        if key in self.borders:
+            neighbours = self.points[key].getborderNeighbours(self.borders)
+            return next(iter(neighbours - {other}))
+        else:
+            raise ValueError("Vertex is not on the border")
+
+
+
+    def coverPalindromes(self, key, size):
+        print(key)
         
 
 
