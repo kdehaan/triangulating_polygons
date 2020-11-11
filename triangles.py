@@ -93,6 +93,7 @@ class UndirectedGraph:
         while True: #reducing palindromes can produce more palindromes, so iterate until they're all gone
 
             borderNodes = self.getBorderPath()
+            print("border:", borderNodes)
 
             palindromes = findPalindromes(borderNodes)
             if (len(palindromes) == 0):
@@ -121,7 +122,7 @@ class UndirectedGraph:
         The circumference is necessary due to the possibility of holes in the graph
         This problem is NP-hard, hence recursive backtracking
         """
-        borderNodes = []
+   
         paths = []
         startPoint = next(iter(self.borders)) # grab arbitrary set element
         prevPoint = next(iter(self.points[startPoint].getborderNeighbours(self.borders))) # grab arbitrary direction to be backwards
@@ -140,7 +141,7 @@ class UndirectedGraph:
             if len(possibleRoutes[-1]) > 0:
                 nextNode = possibleRoutes[-1].pop()
                 if (nextNode is startPoint):
-                    paths.append(path.copy()) # copy the state, not the reference
+                    paths.append(path[:-1].copy()) # copy the state, not the reference
         
                 if (nextNode not in checked):
                     currentPoint = nextNode
@@ -155,8 +156,10 @@ class UndirectedGraph:
             currentPoint = path[-1]
 
         pathLengths = [len(x) for x in paths]
+        print(pathLengths)
         longestPath = paths[pathLengths.index(max(pathLengths))]
-        # [self.points[x].value for x in sequence]
+   
+        borderNodes = [{"value": self.points[x].value, "key":x} for x in longestPath]
         
         return borderNodes
         
