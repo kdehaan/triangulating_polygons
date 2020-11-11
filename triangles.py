@@ -39,15 +39,15 @@ class UndirectedGraph:
 
 
     def colourMinTriangles(self):
-        self.palindromeBorders()
+        self.trimBorders()
         self.findBorderPairs()
         # self.colourInterior()
 
         return self.points
 
     
-    def palindromeBorders(self):
-        """Finds palindromes in the border which can be used to 'destroy' paired borders"""
+    def trimBorders(self):
+        """Attempts to use palindromes to 'destroy' paired borders"""
 
         borderNodes = []
         
@@ -68,33 +68,16 @@ class UndirectedGraph:
             if currentPoint == startPoint:
                 break
         
-        self.trimBorders(borderNodes)
+        palindromes = findPalindromes(borderNodes)
+        print(palindromes)
         
 
 
-    def trimBorders(self, borderNodes):
-        """Finds and trims palindromic sublists.
-        Based off of https://www.tutorialspoint.com/palindromic-substrings-in-python
-        """
-
-        # print(borderNodes)
-        palindromes = []
-        borderValues = [x['value'] for x in borderNodes]
-        borderKeys = [x['key'] for x in borderNodes]
-        # print(borderNodes, borderValues)
-        print("values", borderValues)
-        print("keys  ", borderKeys)
-        for startIdx in range(len(borderValues)):
-            for endIdx in range(startIdx+1, len(borderValues)+1):
-                temp = borderValues[startIdx:endIdx]
-                if len(temp) > 1 and temp == temp [::-1]:
-                    if (len(set(temp)) == 2):
-                        palindromes.append((startIdx, endIdx-1))
-                        print("palindrome: ", temp)
-
-        print(palindromes)
+    
+    
 
 
+        
 
 
 
@@ -119,6 +102,47 @@ class UndirectedGraph:
                     self.borderPairs[pairType].add(getPairKey(point, neighbour))
                 else:
                     self.borderPairs[pairType] = set([getPairKey(point, neighbour)])
+
+
+def findPalindromes(borderNodes):
+        """Finds palindromic sublists in O(n).
+        Based off of Manacher's Algorithm (linear time palindromes)
+        https://leetcode.com/problems/longest-palindromic-substring/discuss/3337/Manacher-algorithm-in-Python-O(n)
+        """
+
+        # print(borderNodes)
+        palindromes = {}
+        borderValues = [x['value'] for x in borderNodes]
+        borderKeys = [x['key'] for x in borderNodes]
+        # print(borderNodes, borderValues)
+        print("values", borderValues)
+        print("keys  ", borderKeys)
+
+        valuesString = '#'.join('^{}$' # buffered to track string start/end for Manacher's
+        .format("".join(borderValues) + "".join(borderValues))) # duplicated to account for wrapped palindromes
+            
+        # Find palindromes
+        n = len(valuesString)
+        p = [0]*n
+        c = r = 0
+        for idx in range(1, n-1):
+            p[idx] = (r > idx) and min(r - idx, p[2*c - idx])
+            while valuesString[idx + 1 + p[idx]] == valuesString[idx - 1 - p[idx]]:
+                p[idx] += 1
+            if idx + p[idx] < r:
+                c, r = idx, idx + p[idx]
+
+     
+        # Account for wrapped substrings and format the index (even palindromes will have x.5 indices)
+        for i in range(0, len(p)):
+            if p[i] >= 3:
+                idx = i/2 -1
+                size = p[i]
+                if (idx - size/2) < len(borderValues):
+                    idx = idx % len(borderValues) 
+                    palindromes[idx] = p[i]
+                 
+        return palindromes
 
 
 
