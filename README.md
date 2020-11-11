@@ -10,6 +10,8 @@ From this point, the active border is analysed to determine the number of (now d
 
 To the best of my knowledge, this program will run _roughly_ in worst case O(n\*ln(n)) + O(m), where `n` is the number of initially filled nodes of the polygon and `m` is the number of interior nodes. If nodes are significantly interconnected, you can probably add another O(max_neighbours) in there as well.
 
+On the example polygon provided, this program determines that the minimum number of triangles possible is 3, and thus the question "Can you colour the inside dots so as to create two complete triangles and no more?" is answered: 'no'.
+
 ## Timeline
 
 (As described by git commits)
@@ -18,8 +20,8 @@ To the best of my knowledge, this program will run _roughly_ in worst case O(n\*
 (Slept overnight) \
 2 hours: Realizing how my first attempt was incomplete, and figuring out how to deal with palindromes \
 4.5 hours: Working bugs out of the palindrome code and \
-3.5 hours: Working bugs out of the recursive backtracker \
-2 hours: Polish, minor bugs, unit tests and updating the readme
+3 hours: Working bugs out of the recursive backtracker \
+2-3 hours: Polish, minor bugs, unit tests and updating the readme
 
 Total: approx. 16 hours (probably give or take an hour since GitHub doesn't track breaks)
 
@@ -27,13 +29,17 @@ Total: approx. 16 hours (probably give or take an hour since GitHub doesn't trac
 
 Language selection:
 
-- Python is the first language of choice due to ease of use and simplicity of execution - Runtime is more likely to be affected by time complexity than language speed to any significant extent, so Python is appropriate to use
+- Python is the first language of choice due to ease of use and simplicity of execution
+- Runtime is more likely to be affected by time complexity than language speed to any significant extent, so Python is appropriate to use
 
 First Steps:
 
-- Look up "polygon triangulation" - Try to solve by hand to see where the complexity lies
+- Look up "polygon triangulation"
+- Try to solve by hand to see where the complexity lies
 
 ### Initial findings from hand solving:
+
+_(In the form of a monologue)_
 
 The number of 'complete' triangles seems to be linked to the amount of two-colour edges. In this example, the are exactly three edges with each of a-b, a-c, and b-c. My clumsy attempts at hand solving all involve at least 3 'complete' triangles.
 
@@ -155,7 +161,7 @@ There may be multiple valid solutions.
 
 Output is not guaranteed to be identical across multiple runs. However, the minimum number of completed triangles will remain constant.
 
-Unit testing is (naively) performed by running the solution many times on each sample polygon and verifying that the output remains constant.
+Unit testing is (minimally) performed by running the solution many times on each sample polygon and verifying that the output remains constant.
 
 To run unit tests:
 
