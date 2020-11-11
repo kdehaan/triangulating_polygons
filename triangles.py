@@ -63,7 +63,7 @@ class UndirectedGraph:
                     and self.points[subPoint].value in nearTypes # which is the other risky colour
                     and pointKey in self.points[subPoint].neighbours): # and it's also a neighbour of the original point
                         return False # ...then it isn't safe to colour.
-                        
+
         return True # ...otherwise, it is
 
 
@@ -100,7 +100,7 @@ class UndirectedGraph:
         print(palindromes)
 
         # this is guaranteed to converge because there are a limited number of palindromes possible
-
+        print("borders", self.borders)
         for idx in palindromes:
             self.coverPalindrome(idx, palindromes[idx], borderNodes)
 
@@ -139,25 +139,48 @@ class UndirectedGraph:
 
         coverValue = self.points[sequence[0]].value # the value of the 'border' of the palindrome, used to 'cover' the rest
 
-        allNeighbours = set().union(*[self.points[key].neighbours for key in sequence[1:-1]]) # finding candidates to 'cover'
+        palindromeCore = sequence[1:-1]
+
+        if not set(palindromeCore).issubset(self.borders):
+            print("aborting sequence", sequence)
+            return
+        
+        allNeighbours = set().union(*[self.points[key].neighbours for key in palindromeCore]) # finding candidates to 'cover'
 
 
         interiorNeighbours = allNeighbours - self.borders # set difference s-t is O(len(s)) in python
         # so this is better than allNeighbours ∩ self.interior, which would be worst case O(len(s)*len(t))
         # https://wiki.python.org/moin/TimeComplexity
 
+        isSafe = True
         for point in interiorNeighbours:
-            print("point", point, "safe", self.safeToColour(point, coverValue))
+            if not self.safeToColour(point, coverValue):
+                isSafe = False
         
-        # neighboursOfNeighbours = set().union
+        if isSafe:
+            for point in interiorNeighbours:
+                self.points[point].value = coverValue
+                print("point", point, "is now", coverValue)
 
-        # potentialCollisions = set()
+            self.borders = self.borders.union(interiorNeighbours)
 
-        print("interiorNeighbours", interiorNeighbours)
+            # sometimes the outer points of the sequence can be covered, if so, remove from the border
+            for point in [sequence[0], sequence[-1]]:
+                print("testing point", point)
+                stillBorder = False
+                for neighbour in self.points[point].neighbours:
+                    if neighbour not in self.borders:
+                        stillBorder = True
+                if not stillBorder:
+                    print("removing", point)
+                    self.borders.remove(point)
+            
+            self.borders = self.borders - set(palindromeCore) # update borders
 
-        
-        print("key", key, "sequence", sequence)
-        print("values", pointValues, "coverValue", coverValue)
+
+            self.interior = self.interior - interiorNeighbours
+            print("sequence", sequence)
+            print("new borders and interior", self.borders, self.interior)
 
         
 
