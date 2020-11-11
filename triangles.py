@@ -21,6 +21,80 @@ class Vertex:
         return self.neighbours.intersection(edges)
 
 
+class UndirectedGraph:
+    """An undirected graph"""
+
+    points = []
+    edges = set()
+    interior = set()
+    edgePairs = dict() # key: type, value: set of pairs
+
+    def __init__(self, points, edges, interior):
+        if edges.union(interior) != set(points):
+            raise ValueError("Graph edges and interior are incomplete")
+        self.points = points
+        self.edges = edges
+        self.interior = interior
+
+
+    def colourMinTriangles(self):
+        self.sandwichEdges()
+        self.findEdgePairs()
+        # self.colourInterior()
+
+        return self.points
+
+    
+    def sandwichEdges(self):
+        """Finds 'sandwiches' in the edge which can be used to 'destroy' paired edges"""
+
+        edgeValues = []
+
+        prevPoint = None
+        currentPoint = next(iter(self.edges)) # grab arbitrary set element
+        prevPoint = next(iter(self.points[currentPoint].neighbours.intersection(self.edges)))
+        startPoint = currentPoint
+        
+
+        while True:
+            print(currentPoint)
+            edgeValues.append(self.points[currentPoint].value)
+            neighbours = self.points[currentPoint].neighbours.intersection(self.edges)
+            tempPoint = currentPoint
+            currentPoint = next(iter(neighbours - {prevPoint}))
+            prevPoint = tempPoint
+            
+
+            if currentPoint == startPoint:
+                break
+        
+
+        print(edgeValues)
+
+
+
+    def findEdgePairs(self):
+        """Finds unique edge pairs. 
+        Note: non-deterministic if multiple solutions are possible due to set operations"""
+        
+        # at this point I messed around with intelligently reading every other 
+        # point so as to minimize set operations, but I realized it only made it O(n/2) 
+        # from O(n) and decided it was more trouble that it was worth
+
+        for point in self.edges:
+            edgeNeighbours = self.points[point].getEdgeNeighbours(self.edges)
+            for neighbour in edgeNeighbours:
+                if (self.points[neighbour].value == self.points[point].value):
+                    continue
+                pairType = getPairKey(self.points[neighbour].value, self.points[point].value)
+
+                if (pairType in self.edgePairs and type(self.edgePairs[pairType]) is set):
+                    self.edgePairs[pairType].add(getPairKey(point, neighbour))
+                else:
+                    self.edgePairs[pairType] = set([getPairKey(point, neighbour)])
+    
+
+
 
 def readCSV(fileLocation=DEFAULT_GRAPH):
     """Opens a .csv describing a certain polygon. Defaults to the provided example.
@@ -42,71 +116,11 @@ def readCSV(fileLocation=DEFAULT_GRAPH):
                 edgePoints.add(point.key)
             else:
                 interiorPoints.add(point.key)
-        return points, edgePoints, interiorPoints
-
-
-def sandwichEdges(graph, edges, interior):
-
-    edgeValues = []
-
-    prevPoint = None
-    currentPoint = next(iter(edges)) # grab arbitrary set element
-    prevPoint = next(iter(graph[currentPoint].neighbours.intersection(edges)))
-    startPoint = currentPoint
-    
-
-    
-
-
-    while True:
-        print(currentPoint)
-        edgeValues.append(graph[currentPoint].value)
-        neighbours = graph[currentPoint].neighbours.intersection(edges)
-        tempPoint = currentPoint
-        currentPoint = next(iter(neighbours - {prevPoint}))
-        prevPoint = tempPoint
+    graph = UndirectedGraph(points, edgePoints, interiorPoints)
+        
+    return graph
         
 
-        # for neighbour in graph[currentPoint].neighbours.intersection(edges):
-        #     # print(currentPoint, neighbour, prevPoint)
-        #     if neighbour != prevPoint:
-        #         print("going next, prev", prevPoint, "new", currentPoint)
-        #         prevPoint = currentPoint
-        #         currentPoint = neighbour
-
-        if currentPoint == startPoint:
-            break
-        # break
-
-    print(edgeValues)
-
-    return graph
-
-
-def findEdgePairs(graph, edges):
-    """Finds unique edge pairs. 
-    Note: non-deterministic if multiple solutions are possible due to set operations"""
-
-    edgePairs = dict() # key: type, value: set of pairs
-    
-    # at this point I messed around with intelligently reading every other 
-    # point so as to minimize set operations, but I realized it only made it O(n/2) 
-    # from O(n) and decided it was more trouble that it was worth
-
-    for point in edges:
-        edgeNeighbours = graph[point].getEdgeNeighbours(edges)
-        for neighbour in edgeNeighbours:
-            if (graph[neighbour].value == graph[point].value):
-                continue
-            pairType = getPairKey(graph[neighbour].value, graph[point].value)
-
-            if (pairType in edgePairs and type(edgePairs[pairType]) is set):
-                edgePairs[pairType].add(getPairKey(point, neighbour))
-            else:
-                edgePairs[pairType] = set([getPairKey(point, neighbour)])
-    
-    
-    return edgePairs
 
     
 
@@ -135,8 +149,9 @@ def main():
     fileLoc = DEFAULT_GRAPH
     if len(sys.argv) > 1:
         fileLoc = sys.argv[1]
-    graphPoints, edgePoints, interiorPoints = readCSV(fileLocation=fileLoc)
-    graphPoints = sandwichEdges(graphPoints, edgePoints, interiorPoints)
+    graph = readCSV(fileLocation=fileLoc)
+    minTriangles = graph.colourMinTriangles()
+    # graphPoints = sandwichEdges(graphPoints, edgePoints, interiorPoints)
     # edgePairs = findEdgePairs(graphPoints, edgePoints)
     # minTriangles, fillType = getMinTriangles(edgePairs, DEFAULT_TYPES)
 
