@@ -3,7 +3,7 @@ import os
 import sys
 import argparse
 
-DEFAULT_GRAPH = "sample2.csv"
+DEFAULT_GRAPH = "default.csv"
 DEFAULT_TYPES = {'a', 'b', 'c'}
 
 
@@ -41,6 +41,29 @@ class UndirectedGraph:
         self.points = points
         self.borders = borders
         self.interior = interior
+
+    def colourMinTriangles(self, fileOut=None):
+        self.trimBorders()
+        self.findBorderPairs()
+        # pairs = self.findBorderPairs()
+        minTriangles, fillType = self.getMinTriangles()
+        print("A minimum of {} completed triangles is possible by filling \
+any remaining points with {}.\nThere may be multiple valid solutions."""
+              .format(minTriangles, fillType))
+
+        if (fileOut):
+            self.fillEmpty(fillType)
+            with open(fileOut, 'w', newline='') as csvFile:
+                graphWriter = csv.writer(csvFile, delimiter=",",
+                                         quotechar='"')
+                graphWriter.writerow(['key', 'value', 'neighbours'])
+                for point in self.points:
+                    vertex = self.points[point]
+                    graphWriter.writerow([vertex.key, vertex.value,
+                                         list([int(i)
+                                              for i in vertex.neighbours])])
+
+        return minTriangles, fillType
 
     def getNeighbours(self, point):
         """Retrieves the active neighbours of a vertex"""
@@ -83,32 +106,9 @@ class UndirectedGraph:
                             and self.points[subPoint].value in nearTypes
                             # and it's also a neighbour of the original point
                             and pointKey in self.getNeighbours(subPoint)):
-                        return False  # ...then it isn't safe to colour.
+                        return False  # ...then it isn't safe to colour...
 
         return True  # ...otherwise, it is
-
-    def colourMinTriangles(self, fileOut=None):
-        self.trimBorders()
-        self.findBorderPairs()
-        # pairs = self.findBorderPairs()
-        minTriangles, fillType = self.getMinTriangles()
-        print("A minimum of {} completed triangles is possible by filling \
-              the rest with {}.\nThere may be multiple valid solutions."
-              .format(minTriangles, fillType))
-
-        if (fileOut):
-            self.fillEmpty(fillType)
-            with open(fileOut, 'w', newline='') as csvFile:
-                graphWriter = csv.writer(csvFile, delimiter=",",
-                                         quotechar='"')
-                graphWriter.writerow(['key', 'value', 'neighbours'])
-                for point in self.points:
-                    vertex = self.points[point]
-                    graphWriter
-                    .writerow([vertex.key, vertex.value,
-                              list([int(i) for i in vertex.neighbours])])
-
-        return minTriangles, fillType
 
     def fillEmpty(self, fillValue):
         """Fills in empty points in O(n) time"""
