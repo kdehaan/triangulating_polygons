@@ -14,11 +14,11 @@ To the best of my knowledge, this program will run in worst case O(n\*ln(n)) + O
 
 (As described by git commits)
 
-4 hours: Initial read-through of the problem and first attempt  
-(Slept overnight)  
-2 hours: Realizing how my first attempt was incomplete, and figuring out how to deal with palindromes  
-4.5 hours: Working bugs out of the palindrome code and  
-3.5 hours: Working bugs out of the recursive backtracker  
+4 hours: Initial read-through of the problem and first attempt \
+(Slept overnight) \
+2 hours: Realizing how my first attempt was incomplete, and figuring out how to deal with palindromes \
+4.5 hours: Working bugs out of the palindrome code and \
+3.5 hours: Working bugs out of the recursive backtracker \
 2 hours: Polish, minor bugs, unit tests and updating the readme
 
 Total: approx. 16 hours (probably give or take an hour since GitHub doesn't track breaks)
