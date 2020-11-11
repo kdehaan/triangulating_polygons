@@ -45,6 +45,43 @@ def readCSV(fileLocation=DEFAULT_GRAPH):
         return points, edgePoints, interiorPoints
 
 
+def sandwichEdges(graph, edges, interior):
+
+    edgeValues = []
+
+    prevPoint = None
+    currentPoint = next(iter(edges)) # grab arbitrary set element
+    prevPoint = next(iter(graph[currentPoint].neighbours.intersection(edges)))
+    startPoint = currentPoint
+    
+
+    
+
+
+    while True:
+        print(currentPoint)
+        edgeValues.append(graph[currentPoint].value)
+        neighbours = graph[currentPoint].neighbours.intersection(edges)
+        tempPoint = currentPoint
+        currentPoint = next(iter(neighbours - {prevPoint}))
+        prevPoint = tempPoint
+        
+
+        # for neighbour in graph[currentPoint].neighbours.intersection(edges):
+        #     # print(currentPoint, neighbour, prevPoint)
+        #     if neighbour != prevPoint:
+        #         print("going next, prev", prevPoint, "new", currentPoint)
+        #         prevPoint = currentPoint
+        #         currentPoint = neighbour
+
+        if currentPoint == startPoint:
+            break
+        # break
+
+    print(edgeValues)
+
+    return graph
+
 
 def findEdgePairs(graph, edges):
     """Finds unique edge pairs. 
@@ -99,11 +136,12 @@ def main():
     if len(sys.argv) > 1:
         fileLoc = sys.argv[1]
     graphPoints, edgePoints, interiorPoints = readCSV(fileLocation=fileLoc)
-    edgePairs = findEdgePairs(graphPoints, edgePoints)
-    minTriangles, fillType = getMinTriangles(edgePairs, DEFAULT_TYPES)
+    graphPoints = sandwichEdges(graphPoints, edgePoints, interiorPoints)
+    # edgePairs = findEdgePairs(graphPoints, edgePoints)
+    # minTriangles, fillType = getMinTriangles(edgePairs, DEFAULT_TYPES)
 
-    print("The minimum number of completed triangles possible in this polygon is {}.\n\
-One way to accomplish this is to fill all empty points with the value '{}'".format(minTriangles, fillType))
+#     print("The minimum number of completed triangles possible in this polygon is {}.\n\
+# One way to accomplish this is to fill all empty points with the value '{}'".format(minTriangles, fillType))
 
     
 
