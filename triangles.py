@@ -21,6 +21,8 @@ class Vertex:
     def getborderNeighbours(self, borders):
         return self.neighbours.intersection(borders)
 
+    
+
 
 class UndirectedGraph:
     """An undirected graph"""
@@ -37,6 +39,8 @@ class UndirectedGraph:
         self.borders = borders
         self.interior = interior
 
+    def safeToColour(self, pointKey, pointValue):
+        nearColours = self.points[pointKey].neighbours
 
     def colourMinTriangles(self):
         self.trimBorders()
@@ -106,10 +110,26 @@ class UndirectedGraph:
             rightOffset += 1
             sequence.insert(0, idxToKey(idx-leftOffset, nodes))
             sequence.append(idxToKey(idx+rightOffset, nodes))
-            pointValues = [self.points[x].value for x in sequence]
+            pointValues = [self.points[key].value for key in sequence]
+
+        coverValue = self.points[sequence[0]].value # the value of the 'border' of the palindrome, used to 'cover' the rest
+
+        allNeighbours = set().union(*[self.points[key].neighbours for key in sequence[1:-1]]) # finding candidates to 'cover'
+
+
+        interiorNeighbours = allNeighbours - self.borders # set difference s-t is O(len(s)) in python
+        # so this is better than allNeighbours ∩ self.interior, which would be worst case O(len(s)*len(t))
+        # https://wiki.python.org/moin/TimeComplexity
+        
+        # neighboursOfNeighbours = set().union
+
+        # potentialCollisions = set()
+
+        print("interiorNeighbours", interiorNeighbours)
+
         
         print("key", key, "sequence", sequence)
-        print("values", pointValues)
+        print("values", pointValues, "coverValue", coverValue)
 
         
 

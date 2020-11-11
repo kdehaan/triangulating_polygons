@@ -55,6 +55,12 @@ https://github.com/Clarkew5/Triangulating-Polygons-Challenge (NOT USED, found it
 
 https://www.tutorialspoint.com/palindromic-substrings-in-python
 
+https://perso.limsi.fr/pointal/_media/python:cours:mementopython3-english.pdf
+
+The Official Python docs
+
+Various Stack Overflow posts for trivial things like incrementing a CSVwriter
+
 # Hindsight Improvements
 
 # Execution Instructions
