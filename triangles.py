@@ -1,7 +1,7 @@
 import csv
 import os
 import sys
-
+import argparse
 
 DEFAULT_GRAPH = "sample2.csv"
 DEFAULT_TYPES = {'a', 'b', 'c'}
@@ -79,17 +79,35 @@ class UndirectedGraph:
         return True # ...otherwise, it is
 
 
-    def colourMinTriangles(self):
+    def colourMinTriangles(self, fileOut=None):
         self.trimBorders()
         self.findBorderPairs()
         # pairs = self.findBorderPairs()
         minTriangles, fillType = self.getMinTriangles()
         print("A minimum of {} completed triangles is possible by filling the rest with {}.\nThere may be multiple valid solutions.".format(minTriangles, fillType))
-        # self.colourInterior()
+        
+        if (fileOut):
+            self.fillEmpty(fillType)
+            with open(fileOut, 'w', newline='') as csvFile:
+                graphWriter = csv.writer(csvFile, delimiter=",",
+                quotechar='"')
+                graphWriter.writerow(['key','value','neighbours'])
+                for point in self.points:
+                    vertex = self.points[point]
+                    graphWriter.writerow([vertex.key, vertex.value, list([int(i) for i in vertex.neighbours])])
+        return minTriangles, fillType
 
-        return self.points
 
-    
+
+    # with open(fileLocation, newline='') as graphFile:
+    #     graphReader = csv.reader(graphFile, delimiter=",")
+
+    def fillEmpty(self, fillValue):
+        """Fills in empty points in O(n) time"""
+
+        for point in self.points:
+            if self.points[point].value is None:
+                self.points[point].value = fillValue
 
     def trimBorders(self):
         """Attempts to use palindromes to 'destroy' paired borders"""
@@ -129,8 +147,6 @@ class UndirectedGraph:
     
         prevPoint = next(iter(self.points[startPoint].getborderNeighbours(self.borders))) # grab arbitrary direction to be backwards
         currentPoint = startPoint
-
-        print("startpoint:", startPoint, "prevpoint", prevPoint)
 
         path = [prevPoint]
         checked = {None} # hack to get rid of strings misbehaving
@@ -394,22 +410,26 @@ def getPairKey(a, b):
 
 
 def main():
+    """Optional arguments: 
+    -f filename.csv     specify input file
+    -o filename.csv     write output to filename.csv
+    """
+    parser = argparse.ArgumentParser(description="Triangluate some polygons.")
+    parser.add_argument("-f", "--fileIn", type=str, help="specify input file")
+    parser.add_argument("-o", "--fileOut", type=str, help="write output to given filename")
+
+    args = parser.parse_args()
     fileLoc = DEFAULT_GRAPH
-    if len(sys.argv) > 1:
-        fileLoc = sys.argv[1]
+    if args.fileIn:
+        fileLoc = args.fileIn
+    # if len(sys.argv) > 1:
+    #     fileLoc = sys.argv[1]
     graph = readCSV(fileLocation=fileLoc)
-    minTriangles = graph.colourMinTriangles()
-    # graphPoints = palindromeborders(graphPoints, borderPoints, interiorPoints)
-    # borderPairs = findborderPairs(graphPoints, borderPoints)
-    # minTriangles, fillType = getMinTriangles(borderPairs, DEFAULT_TYPES)
-
-#     print("The minimum number of completed triangles possible in this polygon is {}.\n\
-# One way to accomplish this is to fill all empty points with the value '{}'".format(minTriangles, fillType))
-
+    graph.colourMinTriangles(args.fileOut)
     
 
 
-
+    
 
 
 
