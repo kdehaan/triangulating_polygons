@@ -3,5 +3,8 @@
         "Neighbour",
         "Vwriter",
         "neighbours"
-    ]
+    ],
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.pycodestyleEnabled": false
 }

@@ -92,43 +92,7 @@ class UndirectedGraph:
         
         while True: #reducing palindromes can produce more palindromes, so iterate until they're all gone
 
-            borderNodes = []
-
-            # must find the circumference of the graph to account for holes 
-            # THIS PROBLEM IS NP-HARD GAH
-            # uses list-based recursive backtracking
-            paths = []
-            startPoint = next(iter(self.borders)) # grab arbitrary set element
-            prevPoint = next(iter(self.points[startPoint].getborderNeighbours(self.borders))) # grab arbitrary direction to be backwards
-            currentPoint = startPoint
-
-            path = [prevPoint]
-            checked = set()
-            possibleRoutes = []
-
-            checked.add(currentPoint)
-            path.append(currentPoint)
-            possibleRoutes.append(self.getOtherBorderNodes(currentPoint, path[-2]))
-            while len(path) > 1:
-                
-                if len(possibleRoutes[-1]) > 0:
-                    nextNode = possibleRoutes[-1].pop()
-                    if (nextNode is startPoint):
-                        paths.append(path.copy()) # copy the state, not the reference
-            
-                    if (nextNode not in checked):
-                        currentPoint = nextNode
-                        checked.add(currentPoint)
-                        path.append(currentPoint)
-                        possibleRoutes.append(self.getOtherBorderNodes(currentPoint, path[-2]))
-                        continue
-            
-                checked.remove(currentPoint)
-                path.pop()
-                possibleRoutes.pop()
-                currentPoint = path[-1]
-
-            print("paths", paths)
+            borderNodes = self.getBorderPath()
 
             palindromes = findPalindromes(borderNodes)
             if (len(palindromes) == 0):
@@ -150,6 +114,52 @@ class UndirectedGraph:
             if noValidPalindromesLeft:
                 break
       
+
+
+    def getBorderPath(self):
+        """Uses recursive backtracking to find the circumference (maximal cycle) of the graph's border
+        The circumference is necessary due to the possibility of holes in the graph
+        This problem is NP-hard, hence recursive backtracking
+        """
+        borderNodes = []
+        paths = []
+        startPoint = next(iter(self.borders)) # grab arbitrary set element
+        prevPoint = next(iter(self.points[startPoint].getborderNeighbours(self.borders))) # grab arbitrary direction to be backwards
+        currentPoint = startPoint
+
+        path = [prevPoint]
+        checked = set()
+        possibleRoutes = []
+
+        checked.add(currentPoint)
+        path.append(currentPoint)
+        possibleRoutes.append(self.getOtherBorderNodes(currentPoint, path[-2]))
+
+        while len(path) > 1:
+            
+            if len(possibleRoutes[-1]) > 0:
+                nextNode = possibleRoutes[-1].pop()
+                if (nextNode is startPoint):
+                    paths.append(path.copy()) # copy the state, not the reference
+        
+                if (nextNode not in checked):
+                    currentPoint = nextNode
+                    checked.add(currentPoint)
+                    path.append(currentPoint)
+                    possibleRoutes.append(self.getOtherBorderNodes(currentPoint, path[-2]))
+                    continue
+        
+            checked.remove(currentPoint)
+            path.pop()
+            possibleRoutes.pop()
+            currentPoint = path[-1]
+
+        pathLengths = [len(x) for x in paths]
+        longestPath = paths[pathLengths.index(max(pathLengths))]
+        # [self.points[x].value for x in sequence]
+        
+        return borderNodes
+        
 
     def getOtherBorderNodes(self, key, prev):
         """Given a key and one of it's border neighbours, returns the other border neighbour"""
