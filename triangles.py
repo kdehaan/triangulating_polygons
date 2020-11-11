@@ -2,6 +2,7 @@ import csv
 import os
 import sys
 
+
 DEFAULT_GRAPH = "sample5.csv"
 DEFAULT_TYPES = {'a', 'b', 'c'}
 
@@ -125,22 +126,27 @@ class UndirectedGraph:
    
         paths = []
         startPoint = next(iter(self.borders)) # grab arbitrary set element
+    
         prevPoint = next(iter(self.points[startPoint].getborderNeighbours(self.borders))) # grab arbitrary direction to be backwards
         currentPoint = startPoint
 
         path = [prevPoint]
-        checked = set()
+        checked = {None} # hack to get rid of strings misbehaving
         possibleRoutes = []
 
         checked.add(currentPoint)
         path.append(currentPoint)
         possibleRoutes.append(self.getOtherBorderNodes(currentPoint, path[-2]))
+        print("startpoint", startPoint, "prevpoint", prevPoint)
+        # if (startPoint == 11 and ((prevPoint == 1) or (prevPoint == 10))):
+        #     print("stop")
+        print("possibleRoutes", possibleRoutes)
 
         while len(path) > 1:
             
             if len(possibleRoutes[-1]) > 0:
                 nextNode = possibleRoutes[-1].pop()
-                if (nextNode is startPoint):
+                if (nextNode == startPoint):
                     paths.append(path[:-1].copy()) # copy the state, not the reference
         
                 if (nextNode not in checked):
@@ -155,8 +161,10 @@ class UndirectedGraph:
             possibleRoutes.pop()
             currentPoint = path[-1]
 
+        if len(paths) == 0:
+            print('what')
         pathLengths = [len(x) for x in paths]
-        print(pathLengths)
+        print("paths", paths, "pathLengths", pathLengths)
         longestPath = paths[pathLengths.index(max(pathLengths))]
    
         borderNodes = [{"value": self.points[x].value, "key":x} for x in longestPath]
