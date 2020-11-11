@@ -98,12 +98,19 @@ class UndirectedGraph:
             prevPoint = next(iter(self.points[currentPoint].getborderNeighbours(self.borders)))
             startPoint = currentPoint
 
-            while True:
+            paths = []
+
+            while True: # must find the circumference of the graph to account for holes THIS PROBLEM IS NP-HARD GAH
+                
+                currentPath = [currentPoint]
+
                 borderNodes.append({"value": self.points[currentPoint].value, "key": self.points[currentPoint].key})
                 tempPoint = currentPoint
-                currentPoint = self.getOtherBorderNode(currentPoint, prevPoint)
-                prevPoint = tempPoint
-                
+                currentPoint, remainingBranches = self.getOtherBorderNode(currentPoint, prevPoint)
+                # if remainingBranches:
+
+                # prevPoint = tempPoint
+                print("looping2")
                 if currentPoint == startPoint:
                     break
             
@@ -133,7 +140,9 @@ class UndirectedGraph:
 
         if key in self.borders:
             neighbours = self.points[key].getborderNeighbours(self.borders)
-            return next(iter(neighbours - {other}))
+            remaining = neighbours - {other}
+            numRemaining = len(remaining)
+            return next(iter(remaining)), numRemaining
         else:
             raise ValueError("Vertex is not on the border")
 
