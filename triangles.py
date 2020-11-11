@@ -31,6 +31,7 @@ class UndirectedGraph:
     points = []
     borders = set()
     interior = set()
+    # obsolete = set()
     borderPairs = dict() # key: type, value: set of pairs
 
     def __init__(self, points, borders, interior):
@@ -41,10 +42,20 @@ class UndirectedGraph:
         self.interior = interior
 
 
+    def getNeighbours(self, point):
+        """Retrieves the active neighbours of a vertex"""
+
+        neighbours = set()
+        for neighbour in self.points[point].neighbours:
+            if neighbour in self.borders and neighbour in self.interior:
+                neighbours.add(point)
+        return neighbours
+
+
     def safeToColour(self, pointKey, pointValue):
         """Checks if colouring this point a given colour will complete a triangle"""
 
-        neighbours = self.points[pointKey].neighbours
+        neighbours = self.getNeighbours(pointKey)
         nearTypes = set([self.points[x].value for x in neighbours])
         if None in nearTypes:
             nearTypes.remove(None)
@@ -58,7 +69,7 @@ class UndirectedGraph:
 
         for point in neighbours: # for each neighbour
             if self.points[point].value in nearTypes: # if they have a potentially risky colour
-                for subPoint in self.points[point].neighbours: #for each of those neighbours
+                for subPoint in self.getNeighbours(point): #for each of those neighbours
                     if (self.points[subPoint].value is not self.points[point].value  # if they have a different colour
                     and self.points[subPoint].value in nearTypes # which is the other risky colour
                     and pointKey in self.points[subPoint].neighbours): # and it's also a neighbour of the original point
@@ -78,45 +89,39 @@ class UndirectedGraph:
     def trimBorders(self):
         """Attempts to use palindromes to 'destroy' paired borders"""
         
-        # while True: #reducing palindromes can produce more palindromes, so iterate until they're all gone
+        while True: #reducing palindromes can produce more palindromes, so iterate until they're all gone
 
-        borderNodes = []
+            borderNodes = []
 
-        prevPoint = None
-        currentPoint = next(iter(self.borders)) # grab arbitrary set element
-        prevPoint = next(iter(self.points[currentPoint].getborderNeighbours(self.borders)))
-        startPoint = currentPoint
+            prevPoint = None
+            currentPoint = next(iter(self.borders)) # grab arbitrary set element
+            prevPoint = next(iter(self.points[currentPoint].getborderNeighbours(self.borders)))
+            startPoint = currentPoint
 
-        while True:
-            borderNodes.append({"value": self.points[currentPoint].value, "key": self.points[currentPoint].key})
-            tempPoint = currentPoint
-            currentPoint = self.getOtherBorderNode(currentPoint, prevPoint)
-            prevPoint = tempPoint
+            while True:
+                borderNodes.append({"value": self.points[currentPoint].value, "key": self.points[currentPoint].key})
+                tempPoint = currentPoint
+                currentPoint = self.getOtherBorderNode(currentPoint, prevPoint)
+                prevPoint = tempPoint
+                
+                if currentPoint == startPoint:
+                    break
             
-            if currentPoint == startPoint:
+            palindromes = findPalindromes(borderNodes)
+
+            # this is guaranteed to converge because there are a limited number of palindromes possible
+            noValidPalindromesLeft = True
+            for idx in palindromes:
+                sequence = self.getPalindromeSequence(idx, palindromes[idx], borderNodes)
+                print("sequence", sequence)
+                if not sequence:
+                    continue
+                valid = self.coverPalindrome(sequence)
+                if valid:
+                    noValidPalindromesLeft = False
+
+            if noValidPalindromesLeft:
                 break
-        
-        palindromes = findPalindromes(borderNodes)
-
-
-        # for palindrome in palindromes:
-            
-        #     if sequence:
-        #         break
-        # if (len(palindromes) == 0): # no more palindromes
-        #     break
-
-
-        # this is guaranteed to converge because there are a limited number of palindromes possible
-        noValidPalindromesLeft = True
-        for idx in palindromes:
-            sequence = self.getPalindromeSequence(idx, palindromes[idx], borderNodes)
-            valid = self.coverPalindrome(sequence)
-            if valid:
-                noValidPalindromesLeft = False
-
-        # if noValidPalindromesLeft:
-        #     # break
       
 
     def getOtherBorderNode(self, key, other):
@@ -163,14 +168,13 @@ class UndirectedGraph:
 
             # sometimes the outer points of the sequence can be covered, if so, remove from the border
             for point in [sequence[0], sequence[-1]]:
-                print("testing point", point)
                 stillBorder = False
                 for neighbour in self.points[point].neighbours:
                     if neighbour not in self.borders:
                         stillBorder = True
                 if not stillBorder:
-                    print("removing", point)
                     self.borders.remove(point)
+                    print("removing", point)
             
             self.borders = self.borders - set(palindromeCore) # update borders
             self.interior = self.interior - interiorNeighbours
@@ -182,6 +186,7 @@ class UndirectedGraph:
 
     def getPalindromeSequence(self, idx, size, nodes):
         """Finds the largest interior palindrome of exactly two value types"""
+
         sequence = []
         leftOffset = rightOffset = 1
         sequence = [idxToKey(idx-leftOffset, nodes), idxToKey(idx, nodes), idxToKey(idx+rightOffset, nodes)]
@@ -197,6 +202,10 @@ class UndirectedGraph:
             sequence.insert(0, idxToKey(idx-leftOffset, nodes))
             sequence.append(idxToKey(idx+rightOffset, nodes))
             pointValues = [self.points[key].value for key in sequence]
+
+            print("size", leftOffset + rightOffset + 1)
+            if ((leftOffset + rightOffset + 1) > size): # max palindrome contains only one value
+                return None
         return sequence
 
 
@@ -256,7 +265,7 @@ def findPalindromes(borderNodes):
      
         # Account for wrapped substrings and format the index (even palindromes will have x.5 indices)
         for i in range(0, len(p)):
-            if p[i] >= 3:
+            if p[i] >= 3: # filter out size 1 and 2, guaranteed to be a single value type
                 idx = i/2 -1
                 size = p[i]
                 if (idx - size/2) < len(borderValues):
