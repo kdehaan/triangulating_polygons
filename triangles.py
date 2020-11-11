@@ -169,37 +169,39 @@ class UndirectedGraph:
         checked.add(currentPoint)
         path.append(currentPoint)
         possibleRoutes.append(self.getOtherBorderNodes(currentPoint, path[-2]))
-    
 
         while len(path) > 1:
-            
+
             if len(possibleRoutes[-1]) > 0:
                 nextNode = possibleRoutes[-1].pop()
                 if (nextNode == startPoint):
-                    paths.append(path[:-1].copy()) # copy the state, not the reference
-        
+                    # copy the state, not the reference
+                    paths.append(path[:-1].copy())
+
                 if (nextNode not in checked):
                     currentPoint = nextNode
                     checked.add(currentPoint)
                     path.append(currentPoint)
-                    possibleRoutes.append(self.getOtherBorderNodes(currentPoint, path[-2]))
+                    possibleRoutes.append(self.getOtherBorderNodes(
+                                          currentPoint, path[-2]))
                     continue
-        
+
             checked.remove(currentPoint)
             path.pop()
             possibleRoutes.pop()
             currentPoint = path[-1]
 
-  
         pathLengths = [len(x) for x in paths]
         longestPath = paths[pathLengths.index(max(pathLengths))]
-        borderNodes = [{"value": self.points[x].value, "key":x} for x in longestPath]
-        
+        borderNodes = [{"value": self.points[x].value, "key":x}
+                       for x in longestPath]
+
         return borderNodes
-        
 
     def getOtherBorderNodes(self, key, prev):
-        """Given a key and one of it's border neighbours, returns the other border neighbour"""
+        """Given a key and one of it's border neighbours,
+        returns the other border neighbour
+        """
 
         if key in self.borders:
             neighbours = self.points[key].getborderNeighbours(self.borders)
@@ -207,71 +209,78 @@ class UndirectedGraph:
         else:
             raise ValueError("Vertex is not on the border")
 
-
-
     def coverPalindrome(self, sequence):
         """Attempts to 'cover' a palindrome to eliminate a paired edge
         Returns True on success, False on failure
         """
 
-        coverValue = self.points[sequence[0]].value # the value of the 'border' of the palindrome, used to 'cover' the rest
+        # the value of the 'border' of the palindrome, used to 'cover' the rest
+        coverValue = self.points[sequence[0]].value
 
         palindromeCore = sequence[1:-1]
 
-        if not set(sequence).issubset(self.borders): # palindrome is obsolete, abort
+        # palindrome is obsolete, abort
+        if not set(sequence).issubset(self.borders):
             return False
-        
 
-        allNeighbours = set().union(*[self.getNeighbours(key) for key in palindromeCore]) # finding candidates to 'cover'
+        # finding candidates to 'cover'
+        allNeighbours = set().union(*[self.getNeighbours(key)
+                                      for key in palindromeCore])
 
-        interiorNeighbours = allNeighbours - self.borders # set difference s-t is O(len(s)) in python
-        # so this is better than allNeighbours ∩ self.interior, which would be worst case O(len(s)*len(t))
+        interiorNeighbours = allNeighbours - self.borders
+        # set difference s-t is O(len(s)) in python
+        # so this is better than allNeighbours ∩ self.interior,
+        # which would be worst case O(len(s)*len(t))
         # https://wiki.python.org/moin/TimeComplexity
 
         isSafe = True
         for point in interiorNeighbours:
             if not self.safeToColour(point, coverValue):
                 isSafe = False
-        
+
         if isSafe:
             for point in interiorNeighbours:
-                self.points[point].value = coverValue # this is where the colours are actually changed
+                # this is where the colours are actually changed
+                self.points[point].value = coverValue
                 print("Fill point", point, "with ", coverValue)
 
             self.borders = self.borders.union(interiorNeighbours)
 
-            # sometimes nodes can be 'folded' into the border. If so, remove from the border
-            nearByNodes = set().union(*[self.getNeighbours(key) for key in interiorNeighbours])
-            atRiskNodes = (nearByNodes - interiorNeighbours) - set(palindromeCore)
-      
+            # sometimes nodes can be 'folded' into the border.
+            # If so, remove from the border
+            nearByNodes = set().union(*[self.getNeighbours(key)
+                                      for key in interiorNeighbours])
+            atRiskNodes = (nearByNodes - interiorNeighbours) \
+                - set(palindromeCore)
+
             for point in atRiskNodes:
                 if point not in self.borders:
                     continue
-    
+
                 stillBorder = False
                 for neighbour in self.getNeighbours(point):
                     if neighbour not in self.borders:
                         stillBorder = True
                 if not stillBorder:
                     self.borders.remove(point)
-            
-            self.borders = self.borders - set(palindromeCore) # update borders
+
+            self.borders = self.borders - set(palindromeCore)  # update borders
             self.interior = self.interior - interiorNeighbours
             return True
 
         return False
- 
-        
 
     def getPalindromeSequence(self, idx, size, nodes):
         """Finds the largest interior palindrome of exactly two value types"""
 
         sequence = []
         leftOffset = rightOffset = 1
-        sequence = [idxToKey(idx-leftOffset, nodes), idxToKey(idx, nodes), idxToKey(idx+rightOffset, nodes)]
+        sequence = [idxToKey(idx-leftOffset, nodes), idxToKey(idx, nodes),
+                    idxToKey(idx+rightOffset, nodes)]
         if idx % 1:
             rightOffset += 1
-            sequence.append(idxToKey(idx+rightOffset, nodes)) # handles even palindromes
+            sequence.append(idxToKey(idx+rightOffset, nodes))
+            # handles even palindromes
 
         pointValues = [self.points[x].value for x in sequence]
 
@@ -282,35 +291,41 @@ class UndirectedGraph:
             sequence.append(idxToKey(idx+rightOffset, nodes))
             pointValues = [self.points[key].value for key in sequence]
 
-            if ((leftOffset + rightOffset + 1) > size): # max palindrome contains only one value
+            # max palindrome contains only one value
+            if ((leftOffset + rightOffset + 1) > size):
                 return None
         return sequence
 
-
     def findBorderPairs(self):
-        """Finds unique border pairs. 
-        Note: non-deterministic if multiple solutions are possible due to set operations
+        """Finds unique border pairs.
+        Note: non-deterministic if multiple solutions
+        are possible due to set operations
         """
-        
-        # at this point I messed around with intelligently reading every other 
-        # point so as to minimize set operations, but I realized it only made it O(n/2) 
-        # from O(n) and decided it was more trouble that it was worth
+
+        # at this point I messed around with intelligently reading every other
+        # point so as to minimize set operations, but I realized it only made
+        # it O(n/2) from O(n) and decided it was more trouble that it was worth
 
         for point in self.borders:
-            borderNeighbours = self.points[point].getborderNeighbours(self.borders)
+            borderNeighbours = self.points[point] \
+                            .getborderNeighbours(self.borders)
+
             for neighbour in borderNeighbours:
                 if (self.points[neighbour].value == self.points[point].value):
                     continue
-                pairType = getPairKey(self.points[neighbour].value, self.points[point].value)
+                pairType = getPairKey(self.points[neighbour].value,
+                                      self.points[point].value)
 
-                if (pairType in self.borderPairs and type(self.borderPairs[pairType]) is set):
-                    self.borderPairs[pairType].add(getPairKey(point, neighbour))
+                if (pairType in self.borderPairs
+                        and type(self.borderPairs[pairType]) is set):
+                    self.borderPairs[pairType].add(getPairKey
+                                                   (point, neighbour))
                 else:
-                    self.borderPairs[pairType] = set([getPairKey(point, neighbour)])
-
+                    self.borderPairs[pairType] = set([getPairKey(
+                                                     point, neighbour)])
 
     def getMinTriangles(self):
-        """Determines the unique pair type with the fewest occurrences. 
+        """Determines the unique pair type with the fewest occurrences.
         Non-deterministic if multiple solutions are possible
         """
 
@@ -320,7 +335,7 @@ class UndirectedGraph:
             if len(self.borderPairs[pair]) < minVal:
                 minVal = len(self.borderPairs[pair])
                 minPair = pair
-    
+
         fillType = (self.types - set(minPair.strip("()").split(" "))).pop()
         return minVal, fillType
 
@@ -328,60 +343,63 @@ class UndirectedGraph:
 def idxToKey(idx, nodes):
     """Retrieves the vertex key corresponding to the index"""
     numNodes = len(nodes)
-    return nodes[int(idx)%numNodes]['key']
+    return nodes[int(idx) % numNodes]['key']
+
 
 def findPalindromes(borderNodes):
-        """Finds palindromic sublists in O(n).
-        Based off of Manacher's Algorithm (linear time palindromes)
-        https://leetcode.com/problems/longest-palindromic-substring/discuss/3337/Manacher-algorithm-in-Python-O(n)
-        """
+    """Finds palindromic sublists in O(n).
+    Based off of Manacher's Algorithm (linear time palindromes)
+    https://leetcode.com/problems/longest-palindromic-substring/discuss/3337/Manacher-algorithm-in-Python-O(n)
+    """
 
-        palindromes = {}
-        borderValues = [x['value'] for x in borderNodes]
-        borderKeys = [x['key'] for x in borderNodes]
+    palindromes = {}
+    borderValues = [x['value'] for x in borderNodes]
+    borderKeys = [x['key'] for x in borderNodes]
 
-        valuesString = '#'.join('^{}$' # buffered to track string start/end for Manacher's
-        .format("".join(borderValues) + "".join(borderValues))) # duplicated to account for wrapped palindromes
-            
-        # Find palindromes
-        n = len(valuesString)
-        p = [0]*n
-        c = r = 0
-        for idx in range(1, n-1):
-            p[idx] = (r > idx) and min(r - idx, p[2*c - idx])
-            while valuesString[idx + 1 + p[idx]] == valuesString[idx - 1 - p[idx]]:
-                p[idx] += 1
-            if idx + p[idx] < r:
-                c, r = idx, idx + p[idx]
+    # buffered to track string start/end for Manacher's
+    valuesString = '#'.join('^{}$'.format("".
+                            join(borderValues) + "".join(borderValues)))
+    # duplicated to account for wrapped palindromes
 
-     
-        # Account for wrapped substrings and format the index (even palindromes will have x.5 indices)
-        for i in range(0, len(p)):
-            if p[i] >= 3: # filter out size 1 and 2, guaranteed to be a single value type
-                idx = i/2 -1
-                size = p[i]
-                if (idx - size/2) < len(borderValues):
-                    idx = idx % len(borderValues) 
-                    palindromes[idx] = p[i]
-                 
-        return palindromes
+    # Find palindromes
+    n = len(valuesString)
+    p = [0]*n
+    c = r = 0
+    for idx in range(1, n-1):
+        p[idx] = (r > idx) and min(r - idx, p[2*c - idx])
+        while valuesString[idx + 1 + p[idx]] == valuesString[idx - 1 - p[idx]]:
+            p[idx] += 1
+        if idx + p[idx] < r:
+            c, r = idx, idx + p[idx]
 
+    # Account for wrapped substrings and format the index
+    # (even palindromes will have x.5 indices)
+    for i in range(0, len(p)):
+        # filter out size 1 and 2, guaranteed to be a single value type
+        if p[i] >= 3:
+            idx = i/2 - 1
+            size = p[i]
+            if (idx - size/2) < len(borderValues):
+                idx = idx % len(borderValues)
+                palindromes[idx] = p[i]
+
+    return palindromes
 
 
 def readCSV(fileLocation=DEFAULT_GRAPH):
-    """Opens a .csv describing a certain polygon. Defaults to the provided example.
+    """Opens a .csv describing a certain polygon.
+    Defaults to the provided example.
     Assumes that points will be labeled as a, b and c only.
     """
 
     points = {}
     borderPoints = set()
     interiorPoints = set()
- 
 
     with open(fileLocation, newline='') as graphFile:
         graphReader = csv.reader(graphFile, delimiter=",")
 
-        next(graphReader, None) # skips csv header
+        next(graphReader, None)  # skips csv header
         for row in graphReader:
             point = Vertex(row[0], row[1], row[2])
             points[point.key] = point
@@ -390,22 +408,8 @@ def readCSV(fileLocation=DEFAULT_GRAPH):
             else:
                 interiorPoints.add(point.key)
     graph = UndirectedGraph(points, borderPoints, interiorPoints)
-        
+
     return graph
-        
-
-# def updateborderPair(pair, newVal):
-#     """Updates the border pair and determines if a palindrome has been found"""
-
-#     if newVal == pair[1]:
-#         return pair, False
-#     if newVal == pair[0]:
-#         pair[1] = newVal
-#         return pair, True
-    
-#     pair = swapTuple(pair)
-#     pair[1] = newVal
-#     return pair, False
 
 
 def swapTuple(t):
@@ -415,22 +419,23 @@ def swapTuple(t):
     t[1] = temp
     return t
 
+
 def getPairKey(a, b):
-    """Makes sure pairs like (1, 2) and (2, 1) aren't duplicated in sets""" 
+    """Makes sure pairs like (1, 2) and (2, 1) aren't duplicated in sets"""
 
     return "({})".format(" ".join(sorted((a, b))))
 
 
-
-
 def main():
-    """Optional arguments: 
+    """Optional arguments:
     -f filename.csv     specify input file
     -o filename.csv     write output to filename.csv
     """
     parser = argparse.ArgumentParser(description="Triangluate some polygons.")
-    parser.add_argument("-f", "--fileIn", type=str, help="specify input file")
-    parser.add_argument("-o", "--fileOut", type=str, help="write output to given filename")
+    parser.add_argument("-f", "--fileIn", type=str,
+                        help="specify input file")
+    parser.add_argument("-o", "--fileOut", type=str,
+                        help="write output to given filename")
 
     args = parser.parse_args()
     fileLoc = DEFAULT_GRAPH
@@ -440,12 +445,6 @@ def main():
     #     fileLoc = sys.argv[1]
     graph = readCSV(fileLocation=fileLoc)
     graph.colourMinTriangles(args.fileOut)
-    
-
-
-    
-
-
 
 
 if __name__ == "__main__":

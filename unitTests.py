@@ -17,7 +17,7 @@ class TestGraphSamplesSequence(unittest.TestCase):
         "sample6.csv"
     ])
     def testSample(self, dataFile):
-        """Runs the (non-deterministic) test NUM_ITER times and 
+        """Runs the (non-deterministic) test NUM_ITER times and
         confirms that the final answer is always equivalent
         """
 
