@@ -12,8 +12,14 @@
 
     (As described by git commits)
 
-    4 hours: Initial read-through of the problem and first attempt
-    (Slept)
+    4 hours:    Initial read-through of the problem and first attempt
+    (Slept overnight)
+    2 hours:    Realizing how my first attempt was incomplete, and figuring out how to deal with palindromes
+    4.5 hours:  Working bugs out of the palindrome code and
+    3.5 hours:  Working bugs out of the recursive backtracker
+    2 hours:    Polish, minor bugs, unit tests and updating the readme
+
+    Total: approx. 16  hours (probably give or take an hour since GitHub doesn't track breaks)
 
 # Thought Process
 
@@ -87,13 +93,16 @@
         - This solution is not guaranteed to work on polygons with holes, or non-planar polygons.
             (it might work for some of them, though)
 
+    Some examples of unit tests that I would add:
+        - Specific
+
 # Execution Instructions
 
-    Download or clone the repository to the folder of your choice. From inside the folder, on a computer with python 3.6.3 or greater, type 'python triangles.py' to run the program on the given (default) solution.
+    Download or clone the repository to the folder of your choice. From inside the folder, on a computer with python 3.6.3 or greater, type `python triangles.py` to run the program on the given (default) solution.
 
     Optional Command Line Arguments:
-    -f filename.csv         specify input file
-    -o filename.csv         write output to filename.csv
+    `-f filename.csv         specify input file`
+    `-o filename.csv         write output to filename.csv`
 
     Sample output:
 
@@ -131,5 +140,19 @@
     A minimum of 1 completed triangles is possible by filling any remaining points with a.
     There may be multiple valid solutions.
     ```
-
     Output is not guaranteed to be identical across multiple runs. However, the minimum number of completed triangles will remain constant.
+
+    Unit testing is (naively) performed by running the solution many times on each sample polygon and verifying that the output remains constant.
+
+    To run unit tests:
+    `python unitTests.py -b`
+
+    Sample Output:
+    ```
+    $ python unitTests.py -b
+    ........
+    ----------------------------------------------------------------------
+    Ran 8 tests in 0.536s
+
+    OK
+    ```

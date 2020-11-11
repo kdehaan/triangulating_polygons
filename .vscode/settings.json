@@ -3,6 +3,7 @@
         "Neighbour",
         "Triangluate",
         "Vwriter",
+        "backtracker",
         "neighbours"
     ],
     "python.linting.enabled": true,
