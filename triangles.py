@@ -93,12 +93,21 @@ class UndirectedGraph:
         
         sequence = []
         key = idxToKey(idx, nodes)
-        neighbours = self.points[key].getborderNeighbours(self.borders)
-        sequence = list(neighbours)
-        sequence.insert(1, key)
+        leftOffset = rightOffset = 1
+        sequence = [idxToKey(idx-leftOffset, nodes), idxToKey(idx, nodes), idxToKey(idx+rightOffset, nodes)]
         if idx % 1:
-            sequence.append(self.getOtherBorderNode(idxToKey(idx+1, nodes), key)) # deals with even palindromes
+            rightOffset += 1
+            sequence.append(idxToKey(idx+rightOffset, nodes)) # handles even palindromes
+
         pointValues = [self.points[x].value for x in sequence]
+
+        while len(set(pointValues)) < 2:
+            leftOffset += 1
+            rightOffset += 1
+            sequence.insert(0, idxToKey(idx-leftOffset, nodes))
+            sequence.append(idxToKey(idx+rightOffset, nodes))
+            pointValues = [self.points[x].value for x in sequence]
+        
         print("key", key, "sequence", sequence)
         print("values", pointValues)
 
@@ -138,7 +147,8 @@ class UndirectedGraph:
 
 def idxToKey(idx, nodes):
     """Retrieves the vertex key corresponding to the index"""
-    return nodes[int(idx)]['key']
+    numNodes = len(nodes)
+    return nodes[int(idx)%numNodes]['key']
 
 def findPalindromes(borderNodes):
         """Finds palindromic sublists in O(n).
