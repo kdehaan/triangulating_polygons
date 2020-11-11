@@ -47,8 +47,8 @@ class UndirectedGraph:
 
         neighbours = set()
         for neighbour in self.points[point].neighbours:
-            if neighbour in self.borders and neighbour in self.interior:
-                neighbours.add(point)
+            if neighbour in self.borders or neighbour in self.interior:
+                neighbours.add(neighbour)
         return neighbours
 
 
@@ -72,7 +72,7 @@ class UndirectedGraph:
                 for subPoint in self.getNeighbours(point): #for each of those neighbours
                     if (self.points[subPoint].value is not self.points[point].value  # if they have a different colour
                     and self.points[subPoint].value in nearTypes # which is the other risky colour
-                    and pointKey in self.points[subPoint].neighbours): # and it's also a neighbour of the original point
+                    and pointKey in self.getNeighbours(subPoint)): # and it's also a neighbour of the original point
                         return False # ...then it isn't safe to colour.
 
         return True # ...otherwise, it is
@@ -108,6 +108,9 @@ class UndirectedGraph:
                     break
             
             palindromes = findPalindromes(borderNodes)
+            if (len(palindromes) == 0):
+                print("no palindromes found")
+                break
 
             # this is guaranteed to converge because there are a limited number of palindromes possible
             noValidPalindromesLeft = True
@@ -118,6 +121,7 @@ class UndirectedGraph:
                     continue
                 valid = self.coverPalindrome(sequence)
                 if valid:
+                    print("valid found")
                     noValidPalindromesLeft = False
 
             if noValidPalindromesLeft:
@@ -144,11 +148,16 @@ class UndirectedGraph:
 
         palindromeCore = sequence[1:-1]
 
-        if not set(palindromeCore).issubset(self.borders): # palindrome is obsolete, abort
+        if not set(sequence).issubset(self.borders): # palindrome is obsolete, abort
             return False
         
-        allNeighbours = set().union(*[self.points[key].neighbours for key in palindromeCore]) # finding candidates to 'cover'
+        print("got ", self.getNeighbours(palindromeCore[0]))
+        print("coreNeighbours", [self.getNeighbours(key) for key in palindromeCore])
+        print("coreNeighbours2", [self.points[key].neighbours for key in palindromeCore])
 
+        allNeighbours = set().union(*[self.getNeighbours(key) for key in palindromeCore]) # finding candidates to 'cover'
+
+        print("allNeighbours", allNeighbours)
 
         interiorNeighbours = allNeighbours - self.borders # set difference s-t is O(len(s)) in python
         # so this is better than allNeighbours ∩ self.interior, which would be worst case O(len(s)*len(t))
@@ -169,7 +178,7 @@ class UndirectedGraph:
             # sometimes the outer points of the sequence can be covered, if so, remove from the border
             for point in [sequence[0], sequence[-1]]:
                 stillBorder = False
-                for neighbour in self.points[point].neighbours:
+                for neighbour in self.getNeighbours(point):
                     if neighbour not in self.borders:
                         stillBorder = True
                 if not stillBorder:
