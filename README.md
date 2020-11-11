@@ -45,13 +45,23 @@
 
 
         -Coming back after a break:
-            I have realized that while this works on the example provided, it is not exhaustive on all polygons. While a pair edge cannot be destroyed in the example, where all of the pairs are directed the same way, a pair sandwich such as a-b-a can be 'destroyed' by surrounding the 'b' with 'a's. My new approach will be to eliminate as many pair edges as possible with 'sandwiches', incrementally reducing the edge of the polygon into uniquely directed pairs, then applying the original solution on this version of the graph. This solution is guaranteed to work in the case where there are an infinite amount of triangles inside the polygon and the sandwiching will have enough space so that it doesn't interfere with other borders; however, if another edge is too close to the newly created border, the sandwiching can fail. As far as I can tell, the best approach here is to attempt to sandwich and simply not do it if it would interact with another border. I do not have the background in graph theory to fully prove that this is an optimal solution, and in truth I suspect that there will be some very specific edge cases where it will not work, but it should be correct on the vast majority of polygons (and will be 100% accurate on the example polygon).
+            I have realized that while this works on the example provided, it is not exhaustive on all polygons. While a pair edge cannot be destroyed in the example, where all of the pairs are directed the same way, a pair sandwich (or palindrome) such as a-b-a can be 'destroyed' by surrounding the 'b' with 'a's. My new approach will be to eliminate as many pair edges as possible with 'sandwiches', incrementally reducing the edge of the polygon into uniquely directed pairs, then applying the original solution on this version of the graph. This solution is guaranteed to work in the case where there are an infinite amount of triangles inside the polygon and the sandwiching will have enough space so that it doesn't interfere with other borders; however, if another edge is too close to the newly created border, the sandwiching can fail. As far as I can tell, the best approach here is to attempt to sandwich and simply not do it if it would interact with another border. I do not have the background in graph theory to fully prove that this is an optimal solution, and in truth I suspect that there will be some very specific edge cases where it will not work, but it should be correct on the vast majority of polygons (and will be 100% accurate on the example polygon).
 
 # Resources
 
 https://en.wikipedia.org/wiki/Polygon_triangulation (not very useful tbh)
 
 https://github.com/Clarkew5/Triangulating-Polygons-Challenge (NOT USED, found it and deliberately ignored the contents)
+
+https://www.tutorialspoint.com/palindromic-substrings-in-python
+
+https://perso.limsi.fr/pointal/_media/python:cours:mementopython3-english.pdf
+
+The Official Python docs
+
+Various Stack Overflow posts for trivial things like incrementing a CSVwriter
+
+I went back to check out how I implemented recursive backtracking in https://github.com/kdehaan/ArduinoMazeAlgorithms/blob/master/maze.cpp
 
 # Hindsight Improvements
 

@@ -1,6 +1,11 @@
 {
     "cSpell.words": [
         "Neighbour",
+        "Triangluate",
+        "Vwriter",
         "neighbours"
-    ]
+    ],
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.pycodestyleEnabled": true
 }
