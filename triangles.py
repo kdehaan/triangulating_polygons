@@ -2,7 +2,7 @@ import csv
 import os
 import sys
 
-DEFAULT_GRAPH = "default.csv"
+DEFAULT_GRAPH = "sample5.csv"
 DEFAULT_TYPES = {'a', 'b', 'c'}
 
 class Vertex:
@@ -27,6 +27,7 @@ class Vertex:
 class UndirectedGraph:
     """An undirected graph"""
 
+    types = DEFAULT_TYPES
     points = []
     borders = set()
     interior = set()
@@ -39,8 +40,32 @@ class UndirectedGraph:
         self.borders = borders
         self.interior = interior
 
+
     def safeToColour(self, pointKey, pointValue):
-        nearColours = self.points[pointKey].neighbours
+        """Checks if colouring this point a given colour will complete a triangle"""
+
+        neighbours = self.points[pointKey].neighbours
+        nearTypes = set([self.points[x].value for x in neighbours])
+        if None in nearTypes:
+            nearTypes.remove(None)
+        if pointValue in nearTypes: # we don't care about nearby points that are the same as we want to colour
+            nearTypes.remove(pointValue)
+        if len(nearTypes) < 2:
+            return True
+
+
+        # this isn't as bad as it looks, I promise
+
+        for point in neighbours: # for each neighbour
+            if self.points[point].value in nearTypes: # if they have a potentially risky colour
+                for subPoint in self.points[point].neighbours: #for each of those neighbours
+                    if (self.points[subPoint].value is not self.points[point].value  # if they have a different colour
+                    and self.points[subPoint].value in nearTypes # which is the other risky colour
+                    and pointKey in self.points[subPoint].neighbours): # and it's also a neighbour of the original point
+                        return False # ...then it isn't safe to colour.
+                        
+        return True # ...otherwise, it is
+
 
     def colourMinTriangles(self):
         self.trimBorders()
@@ -120,6 +145,9 @@ class UndirectedGraph:
         interiorNeighbours = allNeighbours - self.borders # set difference s-t is O(len(s)) in python
         # so this is better than allNeighbours ∩ self.interior, which would be worst case O(len(s)*len(t))
         # https://wiki.python.org/moin/TimeComplexity
+
+        for point in interiorNeighbours:
+            print("point", point, "safe", self.safeToColour(point, coverValue))
         
         # neighboursOfNeighbours = set().union
 
