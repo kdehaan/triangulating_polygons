@@ -3,6 +3,7 @@ import os
 import sys
 
 DEFAULT_GRAPH = "default.csv"
+DEFAULT_TYPES = {'a', 'b', 'c'}
 
 class Vertex:
     """A point in an undirected graph"""
@@ -22,11 +23,13 @@ class Vertex:
 
 
 def readCSV(fileLocation=DEFAULT_GRAPH):
-    """Opens a .csv describing a certain polygon. Defaults to the provided example"""
+    """Opens a .csv describing a certain polygon. Defaults to the provided example.
+    Assumes that points will be labeled as a, b and c only."""
 
     points = {}
     edgePoints = set()
-    valueTypes = set()
+    interiorPoints = set()
+ 
 
     with open(fileLocation, newline='') as graphFile:
         graphReader = csv.reader(graphFile, delimiter=",")
@@ -37,8 +40,9 @@ def readCSV(fileLocation=DEFAULT_GRAPH):
             points[point.key] = point
             if point.value is not None:
                 edgePoints.add(point.key)
-                valueTypes.add(point.value)
-        return points, edgePoints, valueTypes
+            else:
+                interiorPoints.add(point.key)
+        return points, edgePoints, interiorPoints
 
 
 
@@ -94,9 +98,9 @@ def main():
     fileLoc = DEFAULT_GRAPH
     if len(sys.argv) > 1:
         fileLoc = sys.argv[1]
-    graphPoints, edgePoints, valueTypes = readCSV(fileLocation=fileLoc)
+    graphPoints, edgePoints, interiorPoints = readCSV(fileLocation=fileLoc)
     edgePairs = findEdgePairs(graphPoints, edgePoints)
-    minTriangles, fillType = getMinTriangles(edgePairs, valueTypes)
+    minTriangles, fillType = getMinTriangles(edgePairs, DEFAULT_TYPES)
 
     print("The minimum number of completed triangles possible in this polygon is {}.\n\
 One way to accomplish this is to fill all empty points with the value '{}'".format(minTriangles, fillType))
