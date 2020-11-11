@@ -7,6 +7,7 @@ DEFAULT_TYPES = {'a', 'b', 'c'}
 
 class Vertex:
     """A point in an undirected graph"""
+
     key = ""
     value = None 
     neighbours = set()
@@ -49,12 +50,14 @@ class UndirectedGraph:
         """Finds 'sandwiches' in the edge which can be used to 'destroy' paired edges"""
 
         edgeValues = []
+        
 
         prevPoint = None
         currentPoint = next(iter(self.edges)) # grab arbitrary set element
         prevPoint = next(iter(self.points[currentPoint].neighbours.intersection(self.edges)))
         startPoint = currentPoint
         
+        recentEdgePair = (self.points[prevPoint].value, self.points[currentPoint].value)
 
         while True:
             print(currentPoint)
@@ -75,7 +78,8 @@ class UndirectedGraph:
 
     def findEdgePairs(self):
         """Finds unique edge pairs. 
-        Note: non-deterministic if multiple solutions are possible due to set operations"""
+        Note: non-deterministic if multiple solutions are possible due to set operations
+        """
         
         # at this point I messed around with intelligently reading every other 
         # point so as to minimize set operations, but I realized it only made it O(n/2) 
@@ -92,13 +96,13 @@ class UndirectedGraph:
                     self.edgePairs[pairType].add(getPairKey(point, neighbour))
                 else:
                     self.edgePairs[pairType] = set([getPairKey(point, neighbour)])
-    
 
 
 
 def readCSV(fileLocation=DEFAULT_GRAPH):
     """Opens a .csv describing a certain polygon. Defaults to the provided example.
-    Assumes that points will be labeled as a, b and c only."""
+    Assumes that points will be labeled as a, b and c only.
+    """
 
     points = {}
     edgePoints = set()
@@ -121,8 +125,26 @@ def readCSV(fileLocation=DEFAULT_GRAPH):
     return graph
         
 
+# def updateEdgePair(pair, newVal):
+#     """Updates the edge pair and determines if a sandwich has been found"""
 
+#     if newVal == pair[1]:
+#         return pair, False
+#     if newVal == pair[0]:
+#         pair[1] = newVal
+#         return pair, True
     
+#     pair = swapTuple(pair)
+#     pair[1] = newVal
+#     return pair, False
+
+
+def swapTuple(t):
+    """Swaps tuple elements"""
+    temp = t[0]
+    t[0] = t[1]
+    t[1] = temp
+    return t
 
 def getPairKey(a, b):
     """Makes sure pairs like (1, 2) and (2, 1) aren't duplicated in sets""" 
@@ -132,7 +154,8 @@ def getPairKey(a, b):
 
 def getMinTriangles(edgePairs, valueTypes):
     """Determines the unique pair type with the fewest occurrences. 
-    Non-deterministic if multiple solutions are possible"""
+    Non-deterministic if multiple solutions are possible
+    """
 
     minVal = float('inf')
     minPair = None
