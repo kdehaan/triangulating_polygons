@@ -3,7 +3,7 @@ import os
 import sys
 
 
-DEFAULT_GRAPH = "default.csv"
+DEFAULT_GRAPH = "sample2.csv"
 DEFAULT_TYPES = {'a', 'b', 'c'}
 
 class Vertex:
