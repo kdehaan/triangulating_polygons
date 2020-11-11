@@ -6,23 +6,23 @@ import argparse
 DEFAULT_GRAPH = "sample2.csv"
 DEFAULT_TYPES = {'a', 'b', 'c'}
 
+
 class Vertex:
     """A point in an undirected graph"""
 
     key = ""
-    value = None 
+    value = None
     neighbours = set()
 
     def __init__(self, key, value, neighbours):
         self.key = key
-        # https://docs.python.org/3/library/csv.html#csv.writer "None is written as the empty string"
-        self.value = None if value is "" else value 
+        # https://docs.python.org/3/library/csv.html#csv.writer
+        # "None is written as the empty string"
+        self.value = None if value is "" else value
         self.neighbours = set(neighbours.strip("[]").split(","))
 
     def getborderNeighbours(self, borders):
         return self.neighbours.intersection(borders)
-
-    
 
 
 class UndirectedGraph:
@@ -33,7 +33,7 @@ class UndirectedGraph:
     borders = set()
     interior = set()
 
-    borderPairs = dict() # key: type, value: set of pairs
+    borderPairs = dict()  # key: type, value: set of pairs
 
     def __init__(self, points, borders, interior):
         if borders.union(interior) != set(points):
@@ -41,7 +41,6 @@ class UndirectedGraph:
         self.points = points
         self.borders = borders
         self.interior = interior
-
 
     def getNeighbours(self, point):
         """Retrieves the active neighbours of a vertex"""
@@ -52,55 +51,64 @@ class UndirectedGraph:
                 neighbours.add(neighbour)
         return neighbours
 
-
     def safeToColour(self, pointKey, pointValue):
-        """Checks if colouring this point a given colour will complete a triangle"""
+        """Checks if colouring this point a given colour
+        will complete a triangle
+        """
 
         neighbours = self.getNeighbours(pointKey)
         nearTypes = set([self.points[x].value for x in neighbours])
         if None in nearTypes:
             nearTypes.remove(None)
-        if pointValue in nearTypes: # we don't care about nearby points that are the same as we want to colour
+
+        # we don't care about nearby points that
+        # are the same as we want to colour
+        if pointValue in nearTypes:
             nearTypes.remove(pointValue)
         if len(nearTypes) < 2:
             return True
 
-
         # this isn't as bad as it looks, I promise
 
-        for point in neighbours: # for each neighbour
-            if self.points[point].value in nearTypes: # if they have a potentially risky colour
-                for subPoint in self.getNeighbours(point): #for each of those neighbours
-                    if (self.points[subPoint].value is not self.points[point].value  # if they have a different colour
-                    and self.points[subPoint].value in nearTypes # which is the other risky colour
-                    and pointKey in self.getNeighbours(subPoint)): # and it's also a neighbour of the original point
-                        return False # ...then it isn't safe to colour.
+        # for each neighbour
+        for point in neighbours:
+            # if they have a potentially risky colour
+            if self.points[point].value in nearTypes:
+                # for each of those neighbours
+                for subPoint in self.getNeighbours(point):
+                    # if they have a different colour
+                    if (self.points[subPoint].value
+                            is not self.points[point].value
+                            # which is the other risky colour
+                            and self.points[subPoint].value in nearTypes
+                            # and it's also a neighbour of the original point
+                            and pointKey in self.getNeighbours(subPoint)):
+                        return False  # ...then it isn't safe to colour.
 
-        return True # ...otherwise, it is
-
+        return True  # ...otherwise, it is
 
     def colourMinTriangles(self, fileOut=None):
         self.trimBorders()
         self.findBorderPairs()
         # pairs = self.findBorderPairs()
         minTriangles, fillType = self.getMinTriangles()
-        print("A minimum of {} completed triangles is possible by filling the rest with {}.\nThere may be multiple valid solutions.".format(minTriangles, fillType))
-        
+        print("A minimum of {} completed triangles is possible by filling \
+              the rest with {}.\nThere may be multiple valid solutions."
+              .format(minTriangles, fillType))
+
         if (fileOut):
             self.fillEmpty(fillType)
             with open(fileOut, 'w', newline='') as csvFile:
                 graphWriter = csv.writer(csvFile, delimiter=",",
-                quotechar='"')
-                graphWriter.writerow(['key','value','neighbours'])
+                                         quotechar='"')
+                graphWriter.writerow(['key', 'value', 'neighbours'])
                 for point in self.points:
                     vertex = self.points[point]
-                    graphWriter.writerow([vertex.key, vertex.value, list([int(i) for i in vertex.neighbours])])
+                    graphWriter
+                    .writerow([vertex.key, vertex.value,
+                              list([int(i) for i in vertex.neighbours])])
+
         return minTriangles, fillType
-
-
-
-    # with open(fileLocation, newline='') as graphFile:
-    #     graphReader = csv.reader(graphFile, delimiter=",")
 
     def fillEmpty(self, fillValue):
         """Fills in empty points in O(n) time"""
@@ -111,8 +119,10 @@ class UndirectedGraph:
 
     def trimBorders(self):
         """Attempts to use palindromes to 'destroy' paired borders"""
-        
-        while True: #reducing palindromes can produce more palindromes, so iterate until they're all gone
+
+        # reducing palindromes can produce more palindromes,
+        # so iterate until they're all gone
+        while True:
 
             borderNodes = self.getBorderPath()
 
@@ -120,10 +130,13 @@ class UndirectedGraph:
             if (len(palindromes) == 0):
                 break
 
-            # this is guaranteed to converge because there are a limited number of palindromes possible
+            # this is guaranteed to converge because
+            # there are a limited number of palindromes possible
             noValidPalindromesLeft = True
             for idx in palindromes:
-                sequence = self.getPalindromeSequence(idx, palindromes[idx], borderNodes)
+                sequence = self.getPalindromeSequence(idx,
+                                                      palindromes[idx],
+                                                      borderNodes)
                 if not sequence:
                     continue
                 valid = self.coverPalindrome(sequence)
@@ -133,23 +146,24 @@ class UndirectedGraph:
 
             if noValidPalindromesLeft:
                 break
-      
-
 
     def getBorderPath(self):
-        """Uses recursive backtracking to find the circumference (maximal cycle) of the graph's border
-        The circumference is necessary due to the possibility of holes in the graph
+        """Uses recursive backtracking to find the circumference
+        (maximal cycle) of the graph's border. The circumference
+        is necessary due to the possibility of holes in the graph
         This problem is NP-hard, hence recursive backtracking
         """
-   
+
         paths = []
-        startPoint = next(iter(self.borders)) # grab arbitrary set element
-    
-        prevPoint = next(iter(self.points[startPoint].getborderNeighbours(self.borders))) # grab arbitrary direction to be backwards
+        startPoint = next(iter(self.borders))  # grab arbitrary set element
+
+        # grab arbitrary direction to be backwards
+        prevPoint = next(iter(self.points[startPoint]
+                         .getborderNeighbours(self.borders)))
         currentPoint = startPoint
 
         path = [prevPoint]
-        checked = {None} # hack to get rid of strings misbehaving
+        checked = {None}  # hack to get rid of strings misbehaving
         possibleRoutes = []
 
         checked.add(currentPoint)
